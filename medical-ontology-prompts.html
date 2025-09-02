@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>의학용어 추출 및 온톨로지 구축 프롬프트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        nav {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        nav button {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        nav button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        nav button.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .prompt-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .prompt-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .prompt-card {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .prompt-card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .prompt-card h3 {
+            color: #495057;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .prompt-text {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+        
+        .copy-btn.copied {
+            background: #48bb78;
+        }
+        
+        .example-box {
+            background: #e7f5ff;
+            border: 1px solid #74c0fc;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .example-box h4 {
+            color: #1971c2;
+            margin-bottom: 10px;
+        }
+        
+        .tip-box {
+            background: #fff5f5;
+            border: 1px solid #ffc9c9;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .tip-box h4 {
+            color: #c92a2a;
+            margin-bottom: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        table th, table td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        table th {
+            background: #667eea;
+            color: white;
+        }
+        
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        footer {
+            background: #343a40;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+            }
+            
+            nav button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>의학용어 추출 및 온톨로지 구축 프롬프트</h1>
+            <p>인체생리학 교육자료 개발을 위한 체계적 용어 정리 템플릿</p>
+        </header>
+        
+        <nav>
+            <ul>
+                <button onclick="showSection('section1')" class="nav-btn active">1. 계층적 추출</button>
+                <button onclick="showSection('section2')" class="nav-btn">2. 기능별 분류</button>
+                <button onclick="showSection('section3')" class="nav-btn">3. 관계 매핑</button>
+                <button onclick="showSection('section4')" class="nav-btn">4. 교육용 용어집</button>
+                <button onclick="showSection('section5')" class="nav-btn">5. 한영 대응</button>
+                <button onclick="showSection('section6')" class="nav-btn">6. 시각적 관계</button>
+            </ul>
+        </nav>
+        
+        <div class="content">
+            <!-- Section 1: 계층적 용어 추출 -->
+            <div id="section1" class="prompt-section active">
+                <div class="prompt-card">
+                    <h2>1. 계층적 용어 추출 프롬프트</h2>
+                    
+                    <div class="prompt-text">이 문서에서 의학용어를 다음 계층 구조로 추출하고 정리해주세요:
+
+1. 상위 개념 (Major Concepts)
+   - 예: Skeletal muscle, Contraction, Structure
+   
+2. 중위 개념 (Components/Systems)
+   - 예: Myosin, Actin, Sarcomere, Neuromuscular junction
+   
+3. 하위 개념 (Specific Terms)
+   - 예: Troponin C, Troponin I, Z disk, Thick filament
+
+각 용어에 대해:
+- 영문 용어
+- 한글 번역
+- 약어 (있는 경우)
+- 간단한 정의 (1-2문장)
+- 상위 개념과의 관계<button class="copy-btn" onclick="copyText(this)">복사</button></div>
+                    
+                    <div class="example-box">
+                        <h4>📝 사용 예시</h4>
+                        <p>상위 개념: Skeletal Muscle (골격근)<br>
+                        ├─ 중위 개념: Sarcomere (근절)<br>
+                        │   └─ 하위 개념: Z disk (Z선), M line (M선)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 2: 기능별 분류 -->
+            <div id="section2" class="prompt-section">
+                <div class="prompt-card">
+                    <h2>2. 기능별 분류 프롬프트</h2>
+                    
+                    <div class="prompt-text">골격근 관련 용어를 다음 기능별로 분류해주세요:
+
+구조적 요소 (Structural Components):
+- 필라멘트 관련: myosin, actin, thick filament, thin filament
+- 조절 단백질: troponin, tropomyosin
+- 구조 단백질: titin, dystrophin, nebulin
+
+기능적 과정 (Functional Processes):
+- 수축 관련: crossbridge cycling, power stroke
+- 신호 전달: excitation-contraction coupling
+- 이온 이동: Ca2+ release, Ca2+ ATPase
+
+임상 관련 (Clinical Terms):
+- 약물: succinylcholine, curare, physostigmine
+- 수용체: nAChR, RyR, DHP receptor<button class="copy-btn" onclick="copyText(this)">복사</button></div>
+                    
+                    <div class="tip-box">
+                        <h4>💡 활용 팁</h4>
+                        <p>기능별 분류는 학생들이 개념 간 연결을 이해하는 데 도움이 됩니다. 각 카테고리별로 색상 코딩을 하면 시각적 학습 효과를 높일 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 3: 관계 매핑 -->
+            <div id="section3" class="prompt-section">
+                <div class="prompt-card">
+                    <h2>3. 관계 매핑 프롬프트</h2>
+                    
+                    <div class="prompt-text">다음 형식으로 용어 간 관계를 정리해주세요:
+
+[용어1] -- [관계 유형] --> [용어2]
+
+관계 유형:
+- is_part_of (일부분)
+- regulates (조절)
+- binds_to (결합)
+- activates (활성화)
+- inhibits (억제)
+- contains (포함)
+
+예시:
+- Troponin C -- binds_to --> Ca2+
+- Tropomyosin -- regulates --> Myosin binding site
+- Sarcomere -- contains --> Z disk<button class="copy-btn" onclick="copyText(this)">복사</button></div>
+                    
+                    <div class="example-box">
+                        <h4>🔗 관계 매핑 예시</h4>
+                        <table>
+                            <tr>
+                                <th>Source</th>
+                                <th>Relation</th>
+                                <th>Target</th>
+                            </tr>
+                            <tr>
+                                <td>Myosin head</td>
+                                <td>binds_to</td>
+                                <td>Actin</td>
+                            </tr>
+                            <tr>
+                                <td>Ca2+</td>
+                                <td>activates</td>
+                                <td>Troponin C</td>
+                            </tr>
+                            <tr>
+                                <td>ATP</td>
+                                <td>fuels</td>
+                                <td>Crossbridge cycling</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 4: 교육용 용어집 -->
+            <div id="section4" class="prompt-section">
+                <div class="prompt-card">
+                    <h2>4. 교육용 용어집 생성 프롬프트</h2>
+                    
+                    <div class="prompt-text">학생 학습을 위한 용어집을 다음 형식으로 만들어주세요:
+
+난이도별 분류:
+[기초 - Basic]
+- 용어: Muscle fiber
+- 정의: 근육을 구성하는 개별 세포
+- 핵심 포인트: 다핵 세포, 수축 가능
+- 관련 그림: Figure 12.6
+
+[중급 - Intermediate]  
+- 용어: Excitation-contraction coupling
+- 정의: 전기적 신호가 근육 수축으로 전환되는 과정
+- 메커니즘: T-tubule → Ca2+ release → Contraction
+- 관련 그림: Figure 12.9
+
+[고급 - Advanced]
+- 용어: Crossbridge cycling
+- 상세 단계: 5단계 사이클 설명
+- ATP 역할: 각 단계별 ATP/ADP 변화
+- 관련 그림: Figure 12.10<button class="copy-btn" onclick="copyText(this)">복사</button></div>
+                    
+                    <div class="tip-box">
+                        <h4>📚 교육 활용법</h4>
+                        <p>• 기초 레벨: 1-2학년 대상<br>
+                        • 중급 레벨: 3학년 대상<br>
+                        • 고급 레벨: 4학년 및 대학원생 대상</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 5: 한영 대응 -->
+            <div id="section5" class="prompt-section">
+                <div class="prompt-card">
+                    <h2>5. 한국어-영어 대응 프롬프트</h2>
+                    
+                    <div class="prompt-text">다음 형식으로 한영 의학용어 대응표를 작성해주세요:
+
+| 영문 용어 | 한글 용어 | 대한의사협회 용어 | 설명 |
+|---------|---------|--------------|-----|
+| Skeletal muscle | 골격근 | 뼈대근육 | 수의적으로 조절되는 줄무늬근 |
+| Sarcomere | 근절 | 근육마디 | 근육 수축의 기본 단위 |
+| Myofibril | 근원섬유 | 근육원섬유 | 근육섬유 내 수축 단위 |<button class="copy-btn" onclick="copyText(this)">복사</button></div>
+                    
+                    <div class="example-box">
+                        <h4>📋 대응표 예시</h4>
+                        <table>
+                            <tr>
+                                <th>영문 용어</th>
+                                <th>한글 용어</th>
+                                <th>대한의사협회 용어</th>
+                                <th>약어</th>
+                            </tr>
+                            <tr>
+                                <td>Acetylcholine</td>
+                                <td>아세틸콜린</td>
+                                <td>아세틸콜린</td>
+                                <td>ACh</td>
+                            </tr>
+                            <tr>
+                                <td>Sarcoplasmic reticulum</td>
+                                <td>근형질세망</td>
+                                <td>근육세포질그물</td>
+                                <td>SR</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section 6: 시각적 관계 -->
+            <div id="section6" class="prompt-section">
+                <div class="prompt-card">
+                    <h2>6. 시각적 관계 구축 프롬프트</h2>
+                    
+                    <div class="prompt-text">그림별로 나타나는 주요 용어와 개념을 정리해주세요:
+
+Figure 12.1 - 길항근 관계
+- 주요 용어: biceps, triceps, flexor, extensor
+- 핵심 개념: antagonistic pairs
+
+Figure 12.10 - Crossbridge cycle
+- 단계별 용어: rigor state, ATP binding, power stroke
+- 분자 변화: myosin head movement, ADP release<button class="copy-btn" onclick="copyText(this)">복사</button></div>
+                    
+                    <div class="tip-box">
+                        <h4>🎨 시각화 도구 추천</h4>
+                        <p>• BioPortal: 온톨로지 시각화<br>
+                        • Cytoscape: 네트워크 관계도<br>
+                        • yEd: 개념 맵 생성<br>
+                        • Draw.io: 웹 기반 다이어그램</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2024 의학용어 온톨로지 구축 프로젝트 | 인체생리학 교육자료 개발용</p>
+        </footer>
+    </div>
+    
+    <script>
+        function showSection(sectionId) {
+            // 모든 섹션 숨기기
+            const sections = document.querySelectorAll('.prompt-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // 모든 네비게이션 버튼 비활성화
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 선택된 섹션 보이기
+            document.getElementById(sectionId).classList.add('active');
+            
+            // 해당 버튼 활성화
+            event.target.classList.add('active');
+        }
+        
+        function copyText(button) {
+            const textElement = button.parentElement;
+            const textToCopy = textElement.textContent.replace('복사', '').trim();
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✓ 복사됨';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('복사 실패:', err);
+                alert('복사에 실패했습니다. 수동으로 선택하여 복사해주세요.');
+            });
+        }
+    </script>
+</body>
+</html>
