@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarcomere Structure & Structural Proteins</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 1400px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .main-display {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .sarcomere-view {
+            background: linear-gradient(145deg, #f5f7fa 0%, #e8ecf1 100%);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            min-height: 450px;
+        }
+        
+        .info-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        svg {
+            width: 100%;
+            height: 450px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .protein-info {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .protein-info:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .protein-title {
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .protein-description {
+            color: #555;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        .protein-mw {
+            color: #764ba2;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        
+        .band-labels {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .band-item {
+            text-align: center;
+        }
+        
+        .band-name {
+            font-weight: bold;
+            color: #1e3c72;
+            font-size: 1.1em;
+        }
+        
+        .band-desc {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        
+        .highlight-title {
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 8px;
+        }
+        
+        .highlight-content {
+            color: #555;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+        
+        /* Protein highlight colors */
+        .actinin-highlight {
+            stroke: #FF6B6B !important;
+            stroke-width: 3 !important;
+        }
+        
+        .titin-highlight {
+            stroke: #4ECDC4 !important;
+            stroke-width: 3 !important;
+        }
+        
+        .nebulin-highlight {
+            stroke: #9B59B6 !important;
+            stroke-width: 3 !important;
+        }
+        
+        .dystrophin-highlight {
+            stroke: #FFA07A !important;
+            stroke-width: 3 !important;
+        }
+        
+        /* Animation classes */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 5px currentColor); }
+            50% { filter: drop-shadow(0 0 20px currentColor); }
+        }
+        
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+        
+        .glowing {
+            animation: glow 2s infinite;
+        }
+        
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 4px;
+            border-radius: 2px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-display {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 Sarcomere Structure & Structural Proteins</h1>
+        <p class="subtitle">근절의 구조와 주요 구조 단백질들의 역할</p>
+        
+        <div class="band-labels">
+            <div class="band-item">
+                <div class="band-name">Z Disk</div>
+                <div class="band-desc">Sarcomere 경계</div>
+            </div>
+            <div class="band-item">
+                <div class="band-name">I Band</div>
+                <div class="band-desc">Thin filament만</div>
+            </div>
+            <div class="band-item">
+                <div class="band-name">A Band</div>
+                <div class="band-desc">전체 Thick filament</div>
+            </div>
+            <div class="band-item">
+                <div class="band-name">H Band</div>
+                <div class="band-desc">Thick filament만</div>
+            </div>
+            <div class="band-item">
+                <div class="band-name">M Line</div>
+                <div class="band-desc">Sarcomere 중앙</div>
+            </div>
+        </div>
+        
+        <div class="main-display">
+            <div class="sarcomere-view">
+                <svg id="sarcomere" viewBox="0 0 900 450">
+                    <!-- Background bands -->
+                    <defs>
+                        <pattern id="iband-pattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+                            <rect width="10" height="10" fill="#E8F4F8"/>
+                        </pattern>
+                        <pattern id="aband-pattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+                            <rect width="10" height="10" fill="#FFE4E1"/>
+                        </pattern>
+                        <pattern id="hband-pattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+                            <rect width="10" height="10" fill="#FFF0F5"/>
+                        </pattern>
+                    </defs>
+                    
+                    <!-- Band regions -->
+                    <rect x="0" y="100" width="150" height="250" fill="url(#iband-pattern)" opacity="0.5"/>
+                    <rect x="150" y="100" width="600" height="250" fill="url(#aband-pattern)" opacity="0.5"/>
+                    <rect x="750" y="100" width="150" height="250" fill="url(#iband-pattern)" opacity="0.5"/>
+                    <rect x="350" y="100" width="200" height="250" fill="url(#hband-pattern)" opacity="0.7"/>
+                    
+                    <!-- Z disks -->
+                    <g id="z-disks">
+                        <rect x="0" y="100" width="8" height="250" fill="#333" opacity="0.8"/>
+                        <rect x="892" y="100" width="8" height="250" fill="#333" opacity="0.8"/>
+                        <text x="4" y="90" fill="#333" font-size="14" font-weight="bold">Z</text>
+                        <text x="896" y="90" fill="#333" font-size="14" font-weight="bold">Z</text>
+                    </g>
+                    
+                    <!-- M line -->
+                    <g id="m-line">
+                        <rect x="446" y="100" width="8" height="250" fill="#666" opacity="0.5"/>
+                        <text x="450" y="90" text-anchor="middle" fill="#333" font-size="14" font-weight="bold">M</text>
+                    </g>
+                    
+                    <!-- Thin filaments (Actin) -->
+                    <g id="thin-filaments">
+                        <!-- Left side thin filaments -->
+                        <line x1="8" y1="140" x2="400" y2="140" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                        <line x1="8" y1="180" x2="400" y2="180" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                        <line x1="8" y1="220" x2="400" y2="220" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                        <line x1="8" y1="260" x2="400" y2="260" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                        <line x1="8" y1="300" x2="400" y2="300" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                        
+                        <!-- Right side thin filaments -->
+                        <line x1="500" y1="140" x2="892" y2="140" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                        <line x1="500" y1="180" x2="892" y2="180" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                        <line x1="500" y1="220" x2="892" y2="220" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                        <line x1="500" y1="260" x2="892" y2="260" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                        <line x1="500" y1="300" x2="892" y2="300" stroke="#4CAF50" stroke-width="3" class="thin-fil"/>
+                    </g>
+                    
+                    <!-- Thick filaments (Myosin) -->
+                    <g id="thick-filaments">
+                        <rect x="150" y="160" width="600" height="6" fill="#FF6B6B" rx="3"/>
+                        <rect x="150" y="200" width="600" height="6" fill="#FF6B6B" rx="3"/>
+                        <rect x="150" y="240" width="600" height="6" fill="#FF6B6B" rx="3"/>
+                        <rect x="150" y="280" width="600" height="6" fill="#FF6B6B" rx="3"/>
+                        
+                        <!-- Myosin heads -->
+                        <g id="myosin-heads">
+                            <!-- Left side myosin heads with enhanced visibility -->
+                            <ellipse cx="200" cy="160" rx="10" ry="14" fill="#8B0000" stroke="#4B0000" stroke-width="1" transform="rotate(-30 200 160)"/>
+                            <ellipse cx="250" cy="200" rx="10" ry="14" fill="#8B0000" stroke="#4B0000" stroke-width="1" transform="rotate(30 250 200)"/>
+                            <ellipse cx="300" cy="240" rx="10" ry="14" fill="#8B0000" stroke="#4B0000" stroke-width="1" transform="rotate(-30 300 240)"/>
+                            <ellipse cx="350" cy="280" rx="10" ry="14" fill="#8B0000" stroke="#4B0000" stroke-width="1" transform="rotate(30 350 280)"/>
+                            
+                            <!-- Right side myosin heads with enhanced visibility -->
+                            <ellipse cx="550" cy="160" rx="10" ry="14" fill="#8B0000" stroke="#4B0000" stroke-width="1" transform="rotate(30 550 160)"/>
+                            <ellipse cx="600" cy="200" rx="10" ry="14" fill="#8B0000" stroke="#4B0000" stroke-width="1" transform="rotate(-30 600 200)"/>
+                            <ellipse cx="650" cy="240" rx="10" ry="14" fill="#8B0000" stroke="#4B0000" stroke-width="1" transform="rotate(30 650 240)"/>
+                            <ellipse cx="700" cy="280" rx="10" ry="14" fill="#8B0000" stroke="#4B0000" stroke-width="1" transform="rotate(-30 700 280)"/>
+                            
+                            <!-- Myosin head label with arrow -->
+                            <text x="200" y="140" fill="#8B0000" font-size="11" font-weight="bold">Myosin Head</text>
+                            <path d="M 200,143 L 200,150" stroke="#8B0000" stroke-width="1.5" marker-end="url(#arrowhead-small)"/>
+                        </g>
+                    </g>
+                    
+                    <!-- Titin (elastic protein) -->
+                    <g id="titin" opacity="0">
+                        <path d="M 8,225 Q 100,210 150,225 T 300,225 T 450,225 T 600,225 T 750,225 L 892,225" 
+                              stroke="#4ECDC4" stroke-width="2" fill="none" stroke-dasharray="5,5" class="titin-spring"/>
+                        <text x="450" y="380" text-anchor="middle" fill="#4ECDC4" font-size="14" font-weight="bold">
+                            Titin (>3 million MW)
+                        </text>
+                    </g>
+                    
+                    <!-- Actinin -->
+                    <g id="actinin" opacity="0">
+                        <!-- Z disk connections -->
+                        <circle cx="8" cy="140" r="5" fill="#FF6B6B"/>
+                        <circle cx="8" cy="180" r="5" fill="#FF6B6B"/>
+                        <circle cx="8" cy="220" r="5" fill="#FF6B6B"/>
+                        <circle cx="8" cy="260" r="5" fill="#FF6B6B"/>
+                        <circle cx="8" cy="300" r="5" fill="#FF6B6B"/>
+                        
+                        <circle cx="892" cy="140" r="5" fill="#FF6B6B"/>
+                        <circle cx="892" cy="180" r="5" fill="#FF6B6B"/>
+                        <circle cx="892" cy="220" r="5" fill="#FF6B6B"/>
+                        <circle cx="892" cy="260" r="5" fill="#FF6B6B"/>
+                        <circle cx="892" cy="300" r="5" fill="#FF6B6B"/>
+                        
+                        <text x="450" y="400" text-anchor="middle" fill="#FF6B6B" font-size="14" font-weight="bold">
+                            α-Actinin (anchors thin filaments to Z disk)
+                        </text>
+                    </g>
+                    
+                    <!-- Nebulin -->
+                    <g id="nebulin" opacity="0">
+                        <!-- Along thin filaments -->
+                        <line x1="8" y1="145" x2="400" y2="145" stroke="#9B59B6" stroke-width="2" stroke-dasharray="3,3"/>
+                        <line x1="8" y1="185" x2="400" y2="185" stroke="#9B59B6" stroke-width="2" stroke-dasharray="3,3"/>
+                        <line x1="8" y1="225" x2="400" y2="225" stroke="#9B59B6" stroke-width="2" stroke-dasharray="3,3"/>
+                        <line x1="8" y1="265" x2="400" y2="265" stroke="#9B59B6" stroke-width="2" stroke-dasharray="3,3"/>
+                        
+                        <line x1="500" y1="145" x2="892" y2="145" stroke="#9B59B6" stroke-width="2" stroke-dasharray="3,3"/>
+                        <line x1="500" y1="185" x2="892" y2="185" stroke="#9B59B6" stroke-width="2" stroke-dasharray="3,3"/>
+                        <line x1="500" y1="225" x2="892" y2="225" stroke="#9B59B6" stroke-width="2" stroke-dasharray="3,3"/>
+                        <line x1="500" y1="265" x2="892" y2="265" stroke="#9B59B6" stroke-width="2" stroke-dasharray="3,3"/>
+                        
+                        <text x="450" y="420" text-anchor="middle" fill="#9B59B6" font-size="14" font-weight="bold">
+                            Nebulin (molecular ruler for thin filament length)
+                        </text>
+                    </g>
+                    
+                    <!-- Dystrophin -->
+                    <g id="dystrophin" opacity="0">
+                        <!-- Cell membrane connections -->
+                        <rect x="0" y="360" width="900" height="5" fill="#FFA07A" opacity="0.3"/>
+                        <text x="450" y="355" text-anchor="middle" fill="#FFA07A" font-size="11" style="font-style: italic;">세포막 (Sarcolemma)</text>
+                        
+                        <!-- Connection from Z disk to membrane -->
+                        <path d="M 8,320 L 8,360" stroke="#FFA07A" stroke-width="3" fill="none"/>
+                        <path d="M 892,320 L 892,360" stroke="#FFA07A" stroke-width="3" fill="none"/>
+                        
+                        <!-- Dystrophin complex -->
+                        <circle cx="8" cy="340" r="6" fill="#FFA07A"/>
+                        <circle cx="892" cy="340" r="6" fill="#FFA07A"/>
+                        
+                        <text x="450" y="440" text-anchor="middle" fill="#FFA07A" font-size="14" font-weight="bold">
+                            Dystrophin (근섬유를 세포막에 고정시키는 앵커)
+                        </text>
+                    </g>
+                    
+                    <!-- Labels -->
+                    <text x="75" y="85" text-anchor="middle" fill="#333" font-size="12">I Band</text>
+                    <text x="450" y="85" text-anchor="middle" fill="#333" font-size="12">A Band</text>
+                    <text x="825" y="85" text-anchor="middle" fill="#333" font-size="12">I Band</text>
+                    <text x="450" y="115" text-anchor="middle" fill="#666" font-size="11">H Band</text>
+                    
+                    <!-- Sarcomere label -->
+                    <path d="M 8,50 L 892,50" stroke="#333" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowhead-start)"/>
+                    <text x="450" y="40" text-anchor="middle" fill="#333" font-size="16" font-weight="bold">SARCOMERE</text>
+                    
+                    <!-- Arrow markers -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+                        </marker>
+                        <marker id="arrowhead-start" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                            <polygon points="10 0, 0 3.5, 10 7" fill="#333"/>
+                        </marker>
+                        <marker id="arrowhead-small" markerWidth="6" markerHeight="5" refX="6" refY="2.5" orient="auto">
+                            <polygon points="0 0, 6 2.5, 0 5" fill="#8B0000"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+            
+            <div class="info-panel">
+                <div class="protein-info" style="background: linear-gradient(135deg, #8B000010 0%, #FF6B6B10 100%); border-left: 3px solid #8B0000;">
+                    <div class="protein-title">
+                        <span style="color: #8B0000;">●</span> Myosin Head
+                    </div>
+                    <div class="protein-description">
+                        Thick filament에서 돌출된 모터 도메인. ATP 에너지로 작동하는 "분자 모터"로 actin을 잡아당깁니다.
+                    </div>
+                    <div class="protein-mw">Cross-bridge cycle의 주인공</div>
+                </div>
+                
+                <div class="protein-info" id="actinin-info">
+                    <div class="protein-title">
+                        <span style="color: #FF6B6B;">●</span> α-Actinin
+                    </div>
+                    <div class="protein-description">
+                        Thin filaments를 Z disk에 고정시키는 단백질. Z lines가 현미경에서 보이는 이유.
+                    </div>
+                </div>
+                
+                <div class="protein-info" id="titin-info">
+                    <div class="protein-title">
+                        <span style="color: #4ECDC4;">●</span> Titin
+                    </div>
+                    <div class="protein-description">
+                        거대한 탄성 단백질로 sarcomere가 늘어나는 정도를 제한하는 스프링 역할.
+                    </div>
+                    <div class="protein-mw">MW: >3,000,000 Da</div>
+                </div>
+                
+                <div class="protein-info" id="nebulin-info">
+                    <div class="protein-title">
+                        <span style="color: #9B59B6;">●</span> Nebulin
+                    </div>
+                    <div class="protein-description">
+                        Actin filament 길이를 결정하는 molecular ruler. Thin filament를 따라 연장.
+                    </div>
+                </div>
+                
+                <div class="protein-info" id="dystrophin-info">
+                    <div class="protein-title">
+                        <span style="color: #FFA07A;">●</span> Dystrophin
+                    </div>
+                    <div class="protein-description">
+                        근섬유를 세포막에 안정적으로 고정시키는 '앵커' 단백질. 수축 시 근섬유가 손상되지 않도록 보호.
+                    </div>
+                    <div class="protein-mw">MW: 427,000 Da (결핍 시 근이영양증)</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="toggleView('basic')">🔲 기본 구조</button>
+            <button onclick="toggleProtein('actinin')">🔴 α-Actinin</button>
+            <button onclick="toggleProtein('titin')">🔵 Titin</button>
+            <button onclick="toggleProtein('nebulin')">🟣 Nebulin</button>
+            <button onclick="toggleProtein('dystrophin')">🟠 Dystrophin</button>
+            <button onclick="showAll()">👁️ 모두 보기</button>
+            <button onclick="animateContraction()">💪 수축 시뮬레이션</button>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4CAF50;"></div>
+                <span>Thin Filaments (Actin)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF6B6B;"></div>
+                <span>Thick Filaments (Myosin)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8B0000;"></div>
+                <span>Myosin Heads</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #333;"></div>
+                <span>Z Disk</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #666;"></div>
+                <span>M Line</span>
+            </div>
+        </div>
+        
+        <div class="highlight-box">
+            <div class="highlight-title">💡 핵심 개념</div>
+            <div class="highlight-content" id="highlight-text">
+                Sarcomere는 근육의 기능적 단위입니다. Z disk에서 Z disk까지가 하나의 sarcomere이며, 
+                수축 시 thin과 thick filaments가 sliding하면서 I band와 H band는 좁아지지만 A band의 길이는 변하지 않습니다.
+                <br><br>
+                <strong>Myosin Head (진한 빨간색 타원)</strong>: Thick filament에서 돌출된 부분으로, ATP를 사용하여 actin과 결합/분리를 반복하며 근수축을 일으킵니다. Cross-bridge를 형성하는 핵심 구조입니다.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentProtein = null;
+        let contracting = false;
+        
+        // Protein toggle function
+        function toggleProtein(protein) {
+            // Hide all proteins first
+            document.getElementById('actinin').style.opacity = '0';
+            document.getElementById('titin').style.opacity = '0';
+            document.getElementById('nebulin').style.opacity = '0';
+            document.getElementById('dystrophin').style.opacity = '0';
+            
+            // Remove all info highlights
+            document.querySelectorAll('.protein-info').forEach(info => {
+                info.style.background = 'white';
+                info.style.transform = 'translateY(0)';
+            });
+            
+            // Show selected protein
+            if (currentProtein !== protein) {
+                const element = document.getElementById(protein);
+                element.style.opacity = '1';
+                element.style.transition = 'opacity 0.5s ease';
+                
+                // Highlight info panel
+                const infoElement = document.getElementById(protein + '-info');
+                infoElement.style.background = 'linear-gradient(135deg, #667eea10 0%, #764ba210 100%)';
+                infoElement.style.transform = 'translateY(-5px)';
+                
+                currentProtein = protein;
+                
+                // Update highlight text
+                updateHighlightText(protein);
+                
+                // Add glow effect to protein elements
+                if (protein === 'titin') {
+                    document.querySelector('.titin-spring').classList.add('glowing');
+                }
+            } else {
+                currentProtein = null;
+                updateHighlightText('basic');
+            }
+        }
+        
+        // Show all proteins
+        function showAll() {
+            document.getElementById('actinin').style.opacity = '1';
+            document.getElementById('titin').style.opacity = '1';
+            document.getElementById('nebulin').style.opacity = '1';
+            document.getElementById('dystrophin').style.opacity = '1';
+            
+            // Highlight all info panels
+            document.querySelectorAll('.protein-info').forEach(info => {
+                info.style.background = 'linear-gradient(135deg, #667eea10 0%, #764ba210 100%)';
+            });
+            
+            updateHighlightText('all');
+        }
+        
+        // Toggle basic view
+        function toggleView(view) {
+            if (view === 'basic') {
+                document.getElementById('actinin').style.opacity = '0';
+                document.getElementById('titin').style.opacity = '0';
+                document.getElementById('nebulin').style.opacity = '0';
+                document.getElementById('dystrophin').style.opacity = '0';
+                
+                document.querySelectorAll('.protein-info').forEach(info => {
+                    info.style.background = 'white';
+                    info.style.transform = 'translateY(0)';
+                });
+                
+                currentProtein = null;
+                updateHighlightText('basic');
+            }
+        }
+        
+        // Update highlight text based on selection
+        function updateHighlightText(selection) {
+            const highlightText = document.getElementById('highlight-text');
+            const texts = {
+                'basic': 'Sarcomere는 근육의 기능적 단위입니다. Z disk에서 Z disk까지가 하나의 sarcomere이며, 수축 시 thin과 thick filaments가 sliding하면서 I band와 H band는 좁아지지만 A band의 길이는 변하지 않습니다.<br><br><strong>Myosin Head (진한 빨간색 타원)</strong>: Thick filament에서 돌출된 부분으로, ATP를 사용하여 actin과 결합/분리를 반복하며 근수축을 일으킵니다. Cross-bridge를 형성하는 핵심 구조입니다.',
+                'actinin': 'α-Actinin은 thin filaments의 끝을 Z disk에 고정시키는 중요한 구조 단백질입니다. 이 단백질이 Z disk에 집중되어 있어 전자현미경에서 Z lines가 어둡게 보입니다.',
+                'titin': 'Titin은 알려진 단백질 중 가장 큰 단백질(>3백만 MW)로, Z disk에서 M line까지 연결됩니다. 스프링처럼 작용하여 sarcomere가 과도하게 늘어나는 것을 방지하고, thick filaments를 sarcomere 중앙에 위치시킵니다.',
+                'nebulin': 'Nebulin은 actin filament 전체 길이를 따라 연장되는 거대한 단백질입니다. "Molecular ruler"로 작용하여 thin filament의 길이를 정확하게 조절합니다. Nebulin이 없으면 actin filament 길이가 불규칙해집니다.',
+                'dystrophin': 'Dystrophin(427,000 MW)은 근섬유의 "충격 흡수장치" 역할을 합니다. Z disk 근처에서 sarcomere를 세포막에 단단히 고정시켜, 수축 시 발생하는 힘으로부터 세포막이 찢어지는 것을 방지합니다. Dystrophin이 없으면 근육이 수축할 때마다 세포막이 손상되어 근육세포가 죽게 됩니다(Duchenne 근이영양증).',
+                'all': '이 네 가지 구조 단백질들은 sarcomere의 안정성을 유지합니다: α-Actinin은 thin filaments를 Z disk에 고정, Titin은 과도한 신장 방지, Nebulin은 filament 길이 조절, Dystrophin은 세포막 손상 방지. 하나라도 결핍되면 심각한 근육 질환이 발생합니다.'
+            };
+            
+            highlightText.innerHTML = texts[selection] || texts['basic'];
+        }
+        
+        // Animate contraction
+        function animateContraction() {
+            if (contracting) return;
+            contracting = true;
+            
+            const thinFilaments = document.querySelectorAll('.thin-fil');
+            const myosinHeads = document.getElementById('myosin-heads');
+            
+            // Sliding animation
+            thinFilaments.forEach((filament, index) => {
+                if (index < 5) {
+                    // Left side slides right
+                    filament.style.transition = 'transform 1s ease';
+                    filament.style.transform = 'translateX(50px)';
+                } else {
+                    // Right side slides left
+                    filament.style.transition = 'transform 1s ease';
+                    filament.style.transform = 'translateX(-50px)';
+                }
+            });
+            
+            // Myosin head power stroke animation
+            myosinHeads.style.transition = 'transform 0.5s ease';
+            myosinHeads.style.transform = 'rotate(15deg)';
+            
+            // Update bands
+            setTimeout(() => {
+                // Return to original position
+                thinFilaments.forEach(filament => {
+                    filament.style.transform = 'translateX(0)';
+                });
+                myosinHeads.style.transform = 'rotate(0deg)';
+                
+                setTimeout(() => {
+                    contracting = false;
+                }, 1000);
+            }, 1500);
+            
+            // Update text during contraction
+            const originalText = document.getElementById('highlight-text').innerHTML;
+            document.getElementById('highlight-text').innerHTML = 
+                '수축 중: Thin filaments가 thick filaments 사이로 sliding합니다. I band와 H band는 좁아지지만 A band 길이는 변하지 않습니다!';
+            
+            setTimeout(() => {
+                document.getElementById('highlight-text').innerHTML = originalText;
+            }, 3000);
+        }
+        
+        // Add hover effects to protein info panels
+        document.querySelectorAll('.protein-info').forEach(info => {
+            info.addEventListener('click', () => {
+                const proteinName = info.id.replace('-info', '');
+                toggleProtein(proteinName);
+            });
+            
+            info.style.cursor = 'pointer';
+        });
+        
+        // Initialize with basic view
+        toggleView('basic');
+    </script>
+</body>
+</html>
