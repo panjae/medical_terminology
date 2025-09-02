@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATP Binding - Molecular Structure Change</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 1400px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .simulation-area {
+            background: linear-gradient(145deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            min-height: 500px;
+        }
+        
+        .info-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        svg {
+            width: 100%;
+            height: 500px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .parameter-display {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .parameter-title {
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .parameter-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .parameter-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .parameter-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .stage-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stage-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .stage-dot.active {
+            background: #667eea;
+            transform: scale(1.5);
+        }
+        
+        .legend {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1e3c72;
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+        
+        .message-box {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            min-height: 80px;
+        }
+        
+        .message-title {
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+        
+        .message-content {
+            color: #555;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+        
+        /* Animation effects */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5)); }
+            50% { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9)); }
+        }
+        
+        .glowing {
+            animation: glow 2s infinite;
+        }
+        
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 ATP Binding: Molecular Structure Changes</h1>
+        <p class="subtitle">Myosin의 Allosteric Conformational Change 시각화</p>
+        
+        <div class="stage-indicator">
+            <div class="stage-dot active" id="stage-0"></div>
+            <div class="stage-dot" id="stage-1"></div>
+            <div class="stage-dot" id="stage-2"></div>
+            <div class="stage-dot" id="stage-3"></div>
+            <div class="stage-dot" id="stage-4"></div>
+        </div>
+        
+        <div class="main-content">
+            <div class="simulation-area">
+                <svg id="simulation" viewBox="0 0 800 500">
+                    <!-- Actin filament with binding sites -->
+                    <g id="actin-structure">
+                        <rect x="50" y="180" width="700" height="40" fill="#4CAF50" opacity="0.3" rx="20"/>
+                        <text x="400" y="170" text-anchor="middle" fill="#333" font-size="14" font-weight="bold">Actin Filament</text>
+                        
+                        <!-- Actin binding sites -->
+                        <g id="binding-sites">
+                            <circle cx="150" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                            <circle cx="200" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                            <circle cx="250" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                            <circle cx="300" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                            <circle cx="350" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                            <circle cx="400" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                            <circle cx="450" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                            <circle cx="500" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                            <circle cx="550" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                            <circle cx="600" cy="200" r="8" fill="#2E7D32" opacity="0.8"/>
+                        </g>
+                        
+                        <!-- Negative charges on actin -->
+                        <g id="actin-charges" opacity="0">
+                            <text x="340" y="190" fill="red" font-size="12" font-weight="bold">−</text>
+                            <text x="360" y="190" fill="red" font-size="12" font-weight="bold">−</text>
+                            <text x="380" y="190" fill="red" font-size="12" font-weight="bold">−</text>
+                            <text x="400" y="190" fill="red" font-size="12" font-weight="bold">−</text>
+                        </g>
+                    </g>
+                    
+                    <!-- Detailed Myosin structure -->
+                    <g id="myosin-complex" transform="translate(380, 280)">
+                        <!-- Lever arm -->
+                        <rect id="lever-arm" x="-5" y="40" width="10" height="60" fill="#8B4513" stroke="#333" stroke-width="1"/>
+                        
+                        <!-- Motor domain -->
+                        <g id="motor-domain">
+                            <!-- Upper 50K domain -->
+                            <path id="upper-50k" d="M -30,-20 Q -40,0 -30,20 L 0,20 L 0,-20 Z" 
+                                  fill="#FF6B6B" stroke="#333" stroke-width="2"/>
+                            
+                            <!-- Lower 50K domain -->
+                            <path id="lower-50k" d="M 0,-20 L 0,20 L 30,20 Q 40,0 30,-20 Z" 
+                                  fill="#FF9999" stroke="#333" stroke-width="2"/>
+                            
+                            <!-- Nucleotide binding pocket -->
+                            <ellipse id="nucleotide-pocket" cx="0" cy="0" rx="15" ry="10" 
+                                     fill="#FFE4B5" stroke="#333" stroke-width="1"/>
+                            
+                            <!-- Actin-binding cleft indicator -->
+                            <line id="cleft-indicator" x1="-30" y1="0" x2="30" y2="0" 
+                                  stroke="#333" stroke-width="2" stroke-dasharray="3,3"/>
+                        </g>
+                        
+                        <!-- Positive charges on myosin -->
+                        <g id="myosin-charges" opacity="0">
+                            <text x="-35" y="-25" fill="blue" font-size="12" font-weight="bold">+</text>
+                            <text x="-20" y="-25" fill="blue" font-size="12" font-weight="bold">+</text>
+                            <text x="10" y="-25" fill="blue" font-size="12" font-weight="bold">+</text>
+                            <text x="25" y="-25" fill="blue" font-size="12" font-weight="bold">+</text>
+                        </g>
+                        
+                        <!-- Domain labels -->
+                        <text x="0" y="0" text-anchor="middle" fill="#333" font-size="10" font-weight="bold">NBP</text>
+                    </g>
+                    
+                    <!-- ATP molecule with detailed structure -->
+                    <g id="atp-molecule" transform="translate(100, 100)" opacity="0">
+                        <!-- Adenine -->
+                        <rect x="-30" y="-10" width="20" height="20" fill="#4169E1" stroke="#333" stroke-width="1" rx="2"/>
+                        <text x="-20" y="3" text-anchor="middle" fill="white" font-size="8" font-weight="bold">A</text>
+                        
+                        <!-- Ribose -->
+                        <circle cx="0" cy="0" r="10" fill="#FFA500" stroke="#333" stroke-width="1"/>
+                        <text x="0" y="3" text-anchor="middle" fill="white" font-size="8" font-weight="bold">R</text>
+                        
+                        <!-- Phosphates -->
+                        <circle cx="20" cy="0" r="8" fill="#FFD700" stroke="#333" stroke-width="1"/>
+                        <circle cx="35" cy="0" r="8" fill="#FFD700" stroke="#333" stroke-width="1"/>
+                        <circle cx="50" cy="0" r="8" fill="#FFD700" stroke="#333" stroke-width="1"/>
+                        <text x="35" y="3" text-anchor="middle" fill="#333" font-size="6" font-weight="bold">PPP</text>
+                    </g>
+                    
+                    <!-- ADP + Pi molecules -->
+                    <g id="adp-molecule" transform="translate(100, 100)" opacity="0">
+                        <rect x="-30" y="-10" width="20" height="20" fill="#4169E1" stroke="#333" stroke-width="1" rx="2"/>
+                        <text x="-20" y="3" text-anchor="middle" fill="white" font-size="8" font-weight="bold">A</text>
+                        <circle cx="0" cy="0" r="10" fill="#FFA500" stroke="#333" stroke-width="1"/>
+                        <text x="0" y="3" text-anchor="middle" fill="white" font-size="8" font-weight="bold">R</text>
+                        <circle cx="20" cy="0" r="8" fill="#FFD700" stroke="#333" stroke-width="1"/>
+                        <circle cx="35" cy="0" r="8" fill="#FFD700" stroke="#333" stroke-width="1"/>
+                        <text x="27" y="3" text-anchor="middle" fill="#333" font-size="6" font-weight="bold">PP</text>
+                    </g>
+                    
+                    <g id="pi-molecule" transform="translate(100, 100)" opacity="0">
+                        <circle cx="0" cy="0" r="12" fill="#FF69B4" stroke="#333" stroke-width="1"/>
+                        <text x="0" y="4" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Pi</text>
+                    </g>
+                    
+                    <!-- Connection indicators -->
+                    <g id="connections">
+                        <!-- Strong binding indicator -->
+                        <g id="strong-binding" opacity="0">
+                            <line x1="380" y1="260" x2="380" y2="220" stroke="#FF0000" stroke-width="4"/>
+                            <line x1="370" y1="260" x2="370" y2="220" stroke="#FF0000" stroke-width="4"/>
+                            <line x1="390" y1="260" x2="390" y2="220" stroke="#FF0000" stroke-width="4"/>
+                        </g>
+                        
+                        <!-- Weak binding indicator -->
+                        <g id="weak-binding" opacity="0">
+                            <line x1="380" y1="260" x2="380" y2="220" stroke="#FFA500" stroke-width="2" stroke-dasharray="5,5"/>
+                        </g>
+                    </g>
+                    
+                    <!-- Information arrows and labels -->
+                    <g id="info-arrows" opacity="0">
+                        <!-- Switch regions -->
+                        <path d="M 380,280 Q 420,250 450,280" stroke="#9C27B0" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="415" y="260" fill="#9C27B0" font-size="11" font-weight="bold">Switch I/II</text>
+                        
+                        <!-- Relay helix -->
+                        <path d="M 380,320 Q 420,340 450,320" stroke="#E91E63" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="415" y="345" fill="#E91E63" font-size="11" font-weight="bold">Relay Helix</text>
+                    </g>
+                    
+                    <!-- Arrow marker definition -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+                        </marker>
+                    </defs>
+                    
+                    <!-- Affinity indicator -->
+                    <g id="affinity-meter" transform="translate(700, 350)">
+                        <rect x="-30" y="-60" width="60" height="120" fill="none" stroke="#333" stroke-width="2" rx="5"/>
+                        <text x="0" y="-70" text-anchor="middle" fill="#333" font-size="12" font-weight="bold">결합 친화도</text>
+                        
+                        <rect id="affinity-bar" x="-25" y="-55" width="50" height="110" fill="url(#affinity-gradient)" opacity="0.8"/>
+                        <rect id="affinity-level" x="-25" y="-55" width="50" height="0" fill="white"/>
+                        
+                        <text x="0" y="-40" text-anchor="middle" fill="white" font-size="10">강함</text>
+                        <text x="0" y="50" text-anchor="middle" fill="#333" font-size="10">약함</text>
+                    </g>
+                    
+                    <!-- Gradient definition -->
+                    <defs>
+                        <linearGradient id="affinity-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FF0000;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00FF00;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            
+            <div class="info-panel">
+                <div class="parameter-display">
+                    <div class="parameter-title">🔬 구조 파라미터</div>
+                    <div class="parameter-item">
+                        <span class="parameter-label">Cleft 상태:</span>
+                        <span class="parameter-value" id="cleft-state">Closed</span>
+                    </div>
+                    <div class="parameter-item">
+                        <span class="parameter-label">결합 친화도 (Kd):</span>
+                        <span class="parameter-value" id="affinity-value">10⁻⁷ M</span>
+                    </div>
+                    <div class="parameter-item">
+                        <span class="parameter-label">접촉 면적:</span>
+                        <span class="parameter-value" id="contact-area">2000 Å²</span>
+                    </div>
+                    <div class="parameter-item">
+                        <span class="parameter-label">Lever arm 각도:</span>
+                        <span class="parameter-value" id="lever-angle">0°</span>
+                    </div>
+                </div>
+                
+                <div class="parameter-display">
+                    <div class="parameter-title">⚡ 에너지 상태</div>
+                    <div class="parameter-item">
+                        <span class="parameter-label">자유 에너지 (ΔG):</span>
+                        <span class="parameter-value" id="free-energy">0 kcal/mol</span>
+                    </div>
+                    <div class="parameter-item">
+                        <span class="parameter-label">ATP 상태:</span>
+                        <span class="parameter-value" id="atp-state">없음</span>
+                    </div>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-title">구조 요소</div>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FF6B6B;"></div>
+                            <span>Upper 50K</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FF9999;"></div>
+                            <span>Lower 50K</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FFE4B5;"></div>
+                            <span>NBP (핵산 결합부)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #8B4513;"></div>
+                            <span>Lever Arm</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4CAF50;"></div>
+                            <span>Actin</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FFD700;"></div>
+                            <span>ATP/ADP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="playAnimation()">▶️ 전체 애니메이션</button>
+            <button onclick="showStage(0)">1. Rigor State</button>
+            <button onclick="showStage(1)">2. ATP 접근</button>
+            <button onclick="showStage(2)">3. ATP 결합</button>
+            <button onclick="showStage(3)">4. 구조 변화</button>
+            <button onclick="showStage(4)">5. Myosin 분리</button>
+            <button onclick="toggleCharges()" id="charge-btn">전하 표시</button>
+            <button onclick="toggleDetails()" id="detail-btn">상세 구조</button>
+        </div>
+        
+        <div class="message-box">
+            <div class="message-title" id="stage-title">Stage 1: Rigor State (경직 상태)</div>
+            <div class="message-content" id="stage-description">
+                Myosin head가 actin에 강하게 결합된 상태입니다. Actin-binding cleft가 닫혀있고 (closed conformation), 
+                두 분자 간 접촉 면적이 최대입니다. 이 상태에서는 ATP 없이는 분리가 불가능합니다.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentStage = 0;
+        let animationTimer = null;
+        let showingCharges = false;
+        let showingDetails = false;
+        
+        const stages = [
+            {
+                title: "Stage 1: Rigor State (경직 상태)",
+                description: "Myosin head가 actin에 강하게 결합된 상태입니다. Actin-binding cleft가 닫혀있고 (closed conformation), 두 분자 간 접촉 면적이 최대입니다. 이 상태에서는 ATP 없이는 분리가 불가능합니다.",
+                cleftState: "Closed",
+                affinity: "10⁻⁷ M",
+                contactArea: "2000 Å²",
+                leverAngle: "0°",
+                freeEnergy: "0 kcal/mol",
+                atpState: "없음",
+                action: function() {
+                    // Reset positions
+                    setMyosinPosition(380, 260);
+                    closeCleft();
+                    showStrongBinding(true);
+                    hideAllMolecules();
+                    setAffinityLevel(0);
+                }
+            },
+            {
+                title: "Stage 2: ATP 접근",
+                description: "ATP 분자가 myosin의 nucleotide-binding pocket (NBP)에 접근합니다. ATP의 음전하를 띤 phosphate groups이 myosin의 P-loop와 상호작용을 시작합니다.",
+                cleftState: "Closed",
+                affinity: "10⁻⁷ M",
+                contactArea: "2000 Å²",
+                leverAngle: "0°",
+                freeEnergy: "0 kcal/mol",
+                atpState: "접근 중",
+                action: function() {
+                    showATP(true);
+                    moveATP(280, 280);
+                    document.getElementById('atp-molecule').classList.add('glowing');
+                }
+            },
+            {
+                title: "Stage 3: ATP 결합",
+                description: "ATP가 NBP에 결합하면 Switch I/II regions이 구조 변화를 시작합니다. 이 변화가 relay helix를 통해 전파되기 시작합니다. 결합 에너지는 -7.3 kcal/mol입니다.",
+                cleftState: "Opening",
+                affinity: "10⁻⁵ M",
+                contactArea: "1500 Å²",
+                leverAngle: "5°",
+                freeEnergy: "-7.3 kcal/mol",
+                atpState: "결합됨",
+                action: function() {
+                    moveATP(380, 280);
+                    setTimeout(() => {
+                        document.getElementById('info-arrows').style.opacity = '1';
+                        document.getElementById('nucleotide-pocket').style.fill = '#FFD700';
+                        openCleftPartially();
+                    }, 500);
+                    setAffinityLevel(30);
+                }
+            },
+            {
+                title: "Stage 4: Allosteric 구조 변화",
+                description: "ATP 결합이 50Å 떨어진 actin-binding site까지 영향을 미칩니다. Upper/Lower 50K domains이 회전하여 cleft가 열리고, lever arm이 pre-power stroke 위치로 이동합니다.",
+                cleftState: "Open",
+                affinity: "10⁻³ M",
+                contactArea: "500 Å²",
+                leverAngle: "30°",
+                freeEnergy: "-7.3 kcal/mol",
+                atpState: "결합됨",
+                action: function() {
+                    openCleftFully();
+                    rotateLeverArm(30);
+                    showStrongBinding(false);
+                    showWeakBinding(true);
+                    setAffinityLevel(80);
+                }
+            },
+            {
+                title: "Stage 5: Myosin 분리",
+                description: "Cleft가 완전히 열리면서 actin과의 결합 친화도가 10,000배 감소합니다. 정전기적 상호작용과 소수성 상호작용이 파괴되어 myosin이 actin으로부터 분리됩니다.",
+                cleftState: "Open",
+                affinity: "10⁻³ M",
+                contactArea: "0 Å²",
+                leverAngle: "30°",
+                freeEnergy: "-7.3 kcal/mol",
+                atpState: "결합됨",
+                action: function() {
+                    showWeakBinding(false);
+                    setTimeout(() => {
+                        setMyosinPosition(380, 320);
+                        document.getElementById('info-arrows').style.opacity = '0';
+                    }, 500);
+                    setAffinityLevel(100);
+                }
+            }
+        ];
+        
+        function setMyosinPosition(x, y) {
+            const myosin = document.getElementById('myosin-complex');
+            myosin.style.transition = 'transform 1s ease';
+            myosin.setAttribute('transform', `translate(${x}, ${y})`);
+        }
+        
+        function closeCleft() {
+            const upper50k = document.getElementById('upper-50k');
+            const lower50k = document.getElementById('lower-50k');
+            upper50k.style.transition = 'transform 0.5s ease';
+            lower50k.style.transition = 'transform 0.5s ease';
+            upper50k.style.transform = 'rotate(0deg)';
+            lower50k.style.transform = 'rotate(0deg)';
+            
+            document.getElementById('cleft-indicator').style.strokeDasharray = '3,3';
+        }
+        
+        function openCleftPartially() {
+            const upper50k = document.getElementById('upper-50k');
+            const lower50k = document.getElementById('lower-50k');
+            upper50k.style.transform = 'rotate(-10deg) translateX(-5px)';
+            lower50k.style.transform = 'rotate(10deg) translateX(5px)';
+            
+            document.getElementById('cleft-indicator').style.strokeDasharray = '5,5';
+        }
+        
+        function openCleftFully() {
+            const upper50k = document.getElementById('upper-50k');
+            const lower50k = document.getElementById('lower-50k');
+            upper50k.style.transform = 'rotate(-20deg) translateX(-10px)';
+            lower50k.style.transform = 'rotate(20deg) translateX(10px)';
+            
+            document.getElementById('cleft-indicator').style.strokeDasharray = '8,8';
+        }
+        
+        function rotateLeverArm(angle) {
+            const leverArm = document.getElementById('lever-arm');
+            leverArm.style.transition = 'transform 1s ease';
+            leverArm.style.transformOrigin = 'center top';
+            leverArm.style.transform = `rotate(${angle}deg)`;
+        }
+        
+        function showATP(show) {
+            const atp = document.getElementById('atp-molecule');
+            atp.style.transition = 'opacity 0.5s ease';
+            atp.style.opacity = show ? '1' : '0';
+        }
+        
+        function moveATP(x, y) {
+            const atp = document.getElementById('atp-molecule');
+            atp.style.transition = 'transform 1s ease';
+            atp.setAttribute('transform', `translate(${x}, ${y})`);
+        }
+        
+        function hideAllMolecules() {
+            document.getElementById('atp-molecule').style.opacity = '0';
+            document.getElementById('adp-molecule').style.opacity = '0';
+            document.getElementById('pi-molecule').style.opacity = '0';
+            document.getElementById('atp-molecule').classList.remove('glowing');
+        }
+        
+        function showStrongBinding(show) {
+            const binding = document.getElementById('strong-binding');
+            binding.style.transition = 'opacity 0.5s ease';
+            binding.style.opacity = show ? '1' : '0';
+        }
+        
+        function showWeakBinding(show) {
+            const binding = document.getElementById('weak-binding');
+            binding.style.transition = 'opacity 0.5s ease';
+            binding.style.opacity = show ? '1' : '0';
+        }
+        
+        function setAffinityLevel(percentage) {
+            const level = document.getElementById('affinity-level');
+            level.style.transition = 'height 1s ease';
+            level.style.height = `${percentage * 1.1}px`;
+        }
+        
+        function updateParameters(stage) {
+            document.getElementById('cleft-state').textContent = stage.cleftState;
+            document.getElementById('affinity-value').textContent = stage.affinity;
+            document.getElementById('contact-area').textContent = stage.contactArea;
+            document.getElementById('lever-angle').textContent = stage.leverAngle;
+            document.getElementById('free-energy').textContent = stage.freeEnergy;
+            document.getElementById('atp-state').textContent = stage.atpState;
+        }
+        
+        function updateStageIndicator(stageIndex) {
+            // Update dots
+            document.querySelectorAll('.stage-dot').forEach((dot, index) => {
+                if (index === stageIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+        
+        function showStage(stageIndex) {
+            currentStage = stageIndex;
+            const stage = stages[stageIndex];
+            
+            // Update displays
+            document.getElementById('stage-title').textContent = stage.title;
+            document.getElementById('stage-description').textContent = stage.description;
+            updateParameters(stage);
+            updateStageIndicator(stageIndex);
+            
+            // Execute stage action
+            stage.action();
+        }
+        
+        function playAnimation() {
+            let stageIndex = 0;
+            
+            function nextStage() {
+                if (stageIndex < stages.length) {
+                    showStage(stageIndex);
+                    stageIndex++;
+                    animationTimer = setTimeout(nextStage, 2500);
+                } else {
+                    // Reset to beginning after completion
+                    setTimeout(() => showStage(0), 2000);
+                }
+            }
+            
+            // Clear any existing animation
+            if (animationTimer) {
+                clearTimeout(animationTimer);
+            }
+            
+            nextStage();
+        }
+        
+        function toggleCharges() {
+            showingCharges = !showingCharges;
+            const actinCharges = document.getElementById('actin-charges');
+            const myosinCharges = document.getElementById('myosin-charges');
+            
+            actinCharges.style.transition = 'opacity 0.5s ease';
+            myosinCharges.style.transition = 'opacity 0.5s ease';
+            
+            actinCharges.style.opacity = showingCharges ? '1' : '0';
+            myosinCharges.style.opacity = showingCharges ? '1' : '0';
+            
+            document.getElementById('charge-btn').classList.toggle('active');
+        }
+        
+        function toggleDetails() {
+            showingDetails = !showingDetails;
+            const infoArrows = document.getElementById('info-arrows');
+            
+            if (showingDetails && currentStage >= 2) {
+                infoArrows.style.opacity = '1';
+            } else {
+                infoArrows.style.opacity = '0';
+            }
+            
+            document.getElementById('detail-btn').classList.toggle('active');
+        }
+        
+        // Initialize
+        showStage(0);
+    </script>
+</body>
+</html>
