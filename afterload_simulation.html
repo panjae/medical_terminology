@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골격근 Afterload 효과 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(44, 62, 80, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #34495e;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header h2 {
+            font-size: 1.8em;
+            color: #34495e;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .controls-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            border-left: 5px solid #34495e;
+        }
+        
+        .section-title {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-label {
+            display: block;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .afterload-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .btn-minimal {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        
+        .btn-intermediate {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .btn-maximal {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .btn-auto {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            grid-column: 1 / -1;
+        }
+        
+        .current-status {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+            margin-top: 20px;
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .status-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        .status-value {
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .simulation-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #ecf0f1;
+            position: relative;
+            min-height: 500px;
+        }
+        
+        .muscle-setup {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        
+        /* Muscle fiber structure */
+        .muscle-fiber {
+            position: absolute;
+            top: 150px;
+            left: 50px;
+            width: 300px;
+            height: 60px;
+            background: linear-gradient(90deg, #34495e, #2c3e50);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 1s ease;
+            z-index: 2;
+        }
+        
+        /* Sarcomeres visualization */
+        .sarcomere {
+            position: absolute;
+            width: 20px;
+            height: 50px;
+            border: 2px solid #7f8c8d;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .sarc1 { top: 5px; left: 60px; }
+        .sarc2 { top: 5px; left: 90px; }
+        .sarc3 { top: 5px; left: 120px; }
+        .sarc4 { top: 5px; left: 150px; }
+        .sarc5 { top: 5px; left: 180px; }
+        .sarc6 { top: 5px; left: 210px; }
+        .sarc7 { top: 5px; left: 240px; }
+        .sarc8 { top: 5px; left: 270px; }
+        
+        /* Weight/Load */
+        .afterload-weight {
+            position: absolute;
+            top: 220px;
+            left: 370px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #7f8c8d, #95a5a6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            transition: all 1s ease;
+            z-index: 3;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* Pulley system */
+        .pulley {
+            position: absolute;
+            top: 180px;
+            left: 380px;
+            width: 60px;
+            height: 60px;
+            border: 8px solid #34495e;
+            border-radius: 50%;
+            background: transparent;
+            z-index: 1;
+        }
+        
+        .rope {
+            position: absolute;
+            width: 4px;
+            background: #8b4513;
+            z-index: 1;
+        }
+        
+        .rope-horizontal {
+            top: 175px;
+            left: 350px;
+            width: 40px;
+            height: 4px;
+        }
+        
+        .rope-vertical {
+            top: 180px;
+            left: 407px;
+            width: 4px;
+            height: 120px;
+        }
+        
+        /* Force indicators */
+        .force-arrow {
+            position: absolute;
+            font-size: 2em;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            z-index: 5;
+        }
+        
+        .force-contraction {
+            top: 120px;
+            left: 200px;
+            color: #27ae60;
+            transform: rotate(-90deg);
+        }
+        
+        .force-afterload {
+            top: 250px;
+            left: 450px;
+            color: #e74c3c;
+            transform: rotate(90deg);
+        }
+        
+        /* Velocity indicator */
+        .velocity-display {
+            position: absolute;
+            top: 80px;
+            left: 50px;
+            background: rgba(52, 73, 94, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .velocity-bar {
+            width: 200px;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .velocity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            transition: width 1s ease;
+            border-radius: 10px;
+        }
+        
+        /* Force-Velocity Graph */
+        .graph-section {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border-left: 5px solid #34495e;
+        }
+        
+        .graph-container {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            margin: 20px auto;
+            background: white;
+            border: 2px solid #34495e;
+            border-radius: 10px;
+        }
+        
+        .graph-title {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .axis {
+            position: absolute;
+            background: #34495e;
+        }
+        
+        .x-axis {
+            bottom: 50px;
+            left: 60px;
+            width: 500px;
+            height: 3px;
+        }
+        
+        .y-axis {
+            bottom: 50px;
+            left: 60px;
+            width: 3px;
+            height: 300px;
+        }
+        
+        .axis-label {
+            position: absolute;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        
+        .x-label {
+            bottom: 20px;
+            left: 280px;
+        }
+        
+        .y-label {
+            top: 40px;
+            left: 10px;
+            transform: rotate(-90deg);
+        }
+        
+        /* Graph curve */
+        .force-velocity-curve {
+            position: absolute;
+            bottom: 53px;
+            left: 63px;
+            width: 494px;
+            height: 294px;
+        }
+        
+        .curve-path {
+            stroke: #e74c3c;
+            stroke-width: 4;
+            fill: none;
+        }
+        
+        .current-point {
+            fill: #3498db;
+            stroke: #2980b9;
+            stroke-width: 3;
+            r: 8;
+            transition: all 0.5s ease;
+        }
+        
+        /* Grid lines */
+        .grid-line {
+            stroke: #bdc3c7;
+            stroke-width: 1;
+            stroke-dasharray: 5,5;
+        }
+        
+        /* Scale markers */
+        .scale-marker {
+            position: absolute;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        /* Detailed explanation cards */
+        .explanation-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .explanation-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .card-content {
+            color: #34495e;
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+        
+        .card-content ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .card-content li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .card-content li:before {
+            content: "▶ ";
+            color: #3498db;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .card-content li:last-child {
+            border-bottom: none;
+        }
+        
+        /* Animations */
+        @keyframes contract {
+            0% { width: 300px; }
+            100% { width: 250px; }
+        }
+        
+        @keyframes slow-contract {
+            0% { width: 300px; }
+            100% { width: 270px; }
+        }
+        
+        @keyframes no-contract {
+            0% { width: 300px; }
+            100% { width: 300px; }
+        }
+        
+        @keyframes weight-drop {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(30px); }
+        }
+        
+        @keyframes weight-static {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(0); }
+        }
+        
+        .contracting-fast {
+            animation: contract 2s ease-in-out infinite alternate;
+        }
+        
+        .contracting-slow {
+            animation: slow-contract 4s ease-in-out infinite alternate;
+        }
+        
+        .contracting-none {
+            animation: no-contract 1s ease-in-out;
+        }
+        
+        .weight-moving {
+            animation: weight-drop 2s ease-in-out infinite alternate;
+        }
+        
+        .weight-slow {
+            animation: weight-drop 4s ease-in-out infinite alternate;
+        }
+        
+        .weight-static {
+            animation: weight-static 1s ease-in-out;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .graph-container {
+                width: 100%;
+                max-width: 600px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .afterload-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .muscle-setup {
+                transform: scale(0.8);
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 골격근 생리학</h1>
+            <h2>Afterload 효과 시뮬레이션</h2>
+            <p>Skeletal Muscle Mechanics: Force-Velocity Relationship</p>
+        </div>
+
+        <div class="main-content">
+            <div class="controls-section">
+                <h3 class="section-title">📊 실험 조건 설정</h3>
+                
+                <div class="control-group">
+                    <label class="control-label">Afterload 조건 선택:</label>
+                    <div class="afterload-buttons">
+                        <button class="btn btn-minimal" onclick="setAfterload('minimal')">
+                            💚 최소 부하<br><small>(2kg)</small>
+                        </button>
+                        <button class="btn btn-intermediate" onclick="setAfterload('intermediate')">
+                            🟡 중간 부하<br><small>(10kg)</small>
+                        </button>
+                        <button class="btn btn-maximal" onclick="setAfterload('maximal')">
+                            🔴 최대 부하<br><small>(20kg)</small>
+                        </button>
+                        <button class="btn btn-auto" onclick="toggleAutoDemo()">
+                            🔄 자동 시연
+                        </button>
+                    </div>
+                </div>
+
+                <div class="current-status">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">📈 현재 측정값</h4>
+                    <div class="status-row">
+                        <span class="status-label">Afterload:</span>
+                        <span class="status-value" id="currentAfterload">2 kg</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">수축 속도:</span>
+                        <span class="status-value" id="currentVelocity">100%</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">근력 발생:</span>
+                        <span class="status-value" id="currentForce">최대</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">수축 상태:</span>
+                        <span class="status-value" id="currentState">빠른 수축</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="simulation-area">
+                <h3 class="section-title">🏋️ 근육 수축 시뮬레이션</h3>
+                
+                <div class="velocity-display">
+                    <div>수축 속도: <span id="velocityPercent">100%</span></div>
+                    <div class="velocity-bar">
+                        <div class="velocity-fill" id="velocityFill" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="muscle-setup">
+                    <!-- Muscle fiber with sarcomeres -->
+                    <div class="muscle-fiber" id="muscleFiber">
+                        근육 섬유
+                        <div class="sarcomere sarc1"></div>
+                        <div class="sarcomere sarc2"></div>
+                        <div class="sarcomere sarc3"></div>
+                        <div class="sarcomere sarc4"></div>
+                        <div class="sarcomere sarc5"></div>
+                        <div class="sarcomere sarc6"></div>
+                        <div class="sarcomere sarc7"></div>
+                        <div class="sarcomere sarc8"></div>
+                    </div>
+
+                    <!-- Pulley system -->
+                    <div class="pulley"></div>
+                    <div class="rope rope-horizontal"></div>
+                    <div class="rope rope-vertical"></div>
+
+                    <!-- Weight (afterload) -->
+                    <div class="afterload-weight" id="afterloadWeight">
+                        <div id="weightValue">2kg</div>
+                    </div>
+
+                    <!-- Force arrows -->
+                    <div class="force-arrow force-contraction" id="forceContraction">↑</div>
+                    <div class="force-arrow force-afterload" id="forceAfterload">↓</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="graph-section">
+            <h3 class="section-title">📈 Force-Velocity 관계 곡선</h3>
+            <div class="graph-container">
+                <div class="graph-title">근육 수축 속도 vs. 부하 관계</div>
+                
+                <!-- Axes -->
+                <div class="axis x-axis"></div>
+                <div class="axis y-axis"></div>
+                
+                <!-- Labels -->
+                <div class="axis-label x-label">Force (Afterload) →</div>
+                <div class="axis-label y-label">Velocity →</div>
+                
+                <!-- Scale markers -->
+                <div class="scale-marker" style="bottom: 30px; left: 60px;">0</div>
+                <div class="scale-marker" style="bottom: 30px; left: 160px;">5</div>
+                <div class="scale-marker" style="bottom: 30px; left: 260px;">10</div>
+                <div class="scale-marker" style="bottom: 30px; left: 360px;">15</div>
+                <div class="scale-marker" style="bottom: 30px; left: 460px;">20</div>
+                <div class="scale-marker" style="bottom: 30px; left: 540px;">kg</div>
+                
+                <div class="scale-marker" style="bottom: 50px; left: 25px;">0</div>
+                <div class="scale-marker" style="bottom: 100px; left: 25px;">25</div>
+                <div class="scale-marker" style="bottom: 150px; left: 25px;">50</div>
+                <div class="scale-marker" style="bottom: 200px; left: 25px;">75</div>
+                <div class="scale-marker" style="bottom: 250px; left: 25px;">100</div>
+                <div class="scale-marker" style="bottom: 300px; left: 15px;">%</div>
+
+                <!-- Force-velocity curve -->
+                <svg class="force-velocity-curve">
+                    <!-- Grid lines -->
+                    <line class="grid-line" x1="0" y1="0" x2="494" y2="0"></line>
+                    <line class="grid-line" x1="0" y1="74" x2="494" y2="74"></line>
+                    <line class="grid-line" x1="0" y1="147" x2="494" y2="147"></line>
+                    <line class="grid-line" x1="0" y1="221" x2="494" y2="221"></line>
+                    <line class="grid-line" x1="0" y1="294" x2="494" y2="294"></line>
+                    
+                    <line class="grid-line" x1="99" y1="0" x2="99" y2="294"></line>
+                    <line class="grid-line" x1="198" y1="0" x2="198" y2="294"></line>
+                    <line class="grid-line" x1="297" y1="0" x2="297" y2="294"></line>
+                    <line class="grid-line" x1="396" y1="0" x2="396" y2="294"></line>
+                    
+                    <!-- Force-velocity curve (hyperbolic) -->
+                    <path class="curve-path" d="M 0 294 Q 100 200 200 147 Q 300 74 400 37 Q 450 20 494 10"></path>
+                    
+                    <!-- Current point indicator -->
+                    <circle class="current-point" id="currentPoint" cx="99" cy="250" r="8"></circle>
+                </svg>
+            </div>
+        </div>
+
+        <div class="explanation-cards">
+            <div class="explanation-card">
+                <div class="card-title">💡 Afterload의 정의</div>
+                <div class="card-content">
+                    <p><strong>Afterload</strong>는 근육이 수축을 시작한 후에 극복해야 하는 부하를 의미합니다.</p>
+                    <ul>
+                        <li>근육이 발생시켜야 하는 장력의 크기</li>
+                        <li>수축 속도에 역비례 관계</li>
+                        <li>근육의 최대 수축력 한계 존재</li>
+                        <li>생리학적 수축 조절 메커니즘</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🟢 최소 부하 (Minimal Afterload)</div>
+                <div class="card-content">
+                    <p>부하가 작을 때 근육은 <strong>최대 속도</strong>로 수축할 수 있습니다.</p>
+                    <ul>
+                        <li>Vmax에 근접한 수축 속도</li>
+                        <li>최소한의 저항만 극복</li>
+                        <li>효율적인 에너지 사용</li>
+                        <li>빠른 움직임 가능</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🟡 중간 부하 (Intermediate Afterload)</div>
+                <div class="card-content">
+                    <p>중간 정도의 부하에서는 <strong>중간 속도</strong>로 수축합니다.</p>
+                    <ul>
+                        <li>속도와 힘의 균형</li>
+                        <li>일상적인 활동 범위</li>
+                        <li>지속 가능한 수축</li>
+                        <li>효율적인 일 수행</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🔴 최대 부하 (Maximal Afterload)</div>
+                <div class="card-content">
+                    <p>부하가 근육의 최대 수축력을 초과하면 <strong>수축이 불가능</strong>합니다.</p>
+                    <ul>
+                        <li>등척성 수축 (길이 변화 없음)</li>
+                        <li>최대 장력 발생</li>
+                        <li>움직임 없는 상태</li>
+                        <li>높은 에너지 소모</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">📊 Force-Velocity 관계</div>
+                <div class="card-content">
+                    <p>Hill의 방정식으로 설명되는 <strong>역쌍곡선 관계</strong>입니다.</p>
+                    <ul>
+                        <li>(P + a)(V + b) = (P₀ + a)b</li>
+                        <li>P: 부하, V: 속도, P₀: 최대 장력</li>
+                        <li>a, b: 근육 특성 상수</li>
+                        <li>생리학적 최적화 원리</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🏥 임상적 의미</div>
+                <div class="card-content">
+                    <p>심장근육과 골격근의 <strong>기능 평가</strong>에 중요한 지표입니다.</p>
+                    <ul>
+                        <li>심장 기능 평가 (cardiac afterload)</li>
+                        <li>근력 훈련 프로그램 설계</li>
+                        <li>재활 치료 계획</li>
+                        <li>운동 처방 기준</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAfterloadType = 'minimal';
+        let isAutoDemo = false;
+        let autoInterval;
+
+        // Afterload 설정 함수
+        function setAfterload(type) {
+            currentAfterloadType = type;
+            const muscleFiber = document.getElementById('muscleFiber');
+            const weight = document.getElementById('afterloadWeight');
+            const weightValue = document.getElementById('weightValue');
+            const velocityFill = document.getElementById('velocityFill');
+            const currentPoint = document.getElementById('currentPoint');
+            
+            // 기존 애니메이션 클래스 제거
+            muscleFiber.classList.remove('contracting-fast', 'contracting-slow', 'contracting-none');
+            weight.classList.remove('weight-moving', 'weight-slow', 'weight-static');
+
+            let afterloadKg, velocity, force, state, pointX, pointY, weightColor;
+
+            switch(type) {
+                case 'minimal':
+                    afterloadKg = '2kg';
+                    velocity = '100%';
+                    force = '최대';
+                    state = '빠른 수축';
+                    pointX = 99;  // 2kg position
+                    pointY = 250; // High velocity
+                    weightColor = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+                    
+                    setTimeout(() => {
+                        muscleFiber.classList.add('contracting-fast');
+                        weight.classList.add('weight-moving');
+                    }, 100);
+                    break;
+
+                case 'intermediate':
+                    afterloadKg = '10kg';
+                    velocity = '50%';
+                    force = '중간';
+                    state = '중간 수축';
+                    pointX = 297; // 10kg position
+                    pointY = 147; // Medium velocity
+                    weightColor = 'linear-gradient(135deg, #f39c12, #e67e22)';
+                    
+                    setTimeout(() => {
+                        muscleFiber.classList.add('contracting-slow');
+                        weight.classList.add('weight-slow');
+                    }, 100);
+                    break;
+
+                case 'maximal':
+                    afterloadKg = '20kg';
+                    velocity = '0%';
+                    force = '최대한계';
+                    state = '수축 불가';
+                    pointX = 494; // 20kg position
+                    pointY = 10;  // No velocity
+                    weightColor = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+                    
+                    setTimeout(() => {
+                        muscleFiber.classList.add('contracting-none');
+                        weight.classList.add('weight-static');
+                    }, 100);
+                    break;
+            }
+
+            // UI 업데이트
+            weightValue.textContent = afterloadKg;
+            weight.style.background = weightColor;
+            velocityFill.style.width = velocity;
+            document.getElementById('velocityPercent').textContent = velocity;
+            
+            // 상태 정보 업데이트
+            document.getElementById('currentAfterload').textContent = afterloadKg;
+            document.getElementById('currentVelocity').textContent = velocity;
+            document.getElementById('currentForce').textContent = force;
+            document.getElementById('currentState').textContent = state;
+            
+            // 그래프 포인트 이동
+            currentPoint.setAttribute('cx', pointX);
+            currentPoint.setAttribute('cy', pointY);
+
+            // 포인트 색상 변경
+            switch(type) {
+                case 'minimal':
+                    currentPoint.style.fill = '#27ae60';
+                    currentPoint.style.stroke = '#229954';
+                    break;
+                case 'intermediate':
+                    currentPoint.style.fill = '#f39c12';
+                    currentPoint.style.stroke = '#e67e22';
+                    break;
+                case 'maximal':
+                    currentPoint.style.fill = '#e74c3c';
+                    currentPoint.style.stroke = '#c0392b';
+                    break;
+            }
+        }
+
+        // 자동 시연 토글
+        function toggleAutoDemo() {
+            const btn = document.querySelector('.btn-auto');
+            
+            if (isAutoDemo) {
+                // 자동 시연 중지
+                isAutoDemo = false;
+                clearInterval(autoInterval);
+                btn.textContent = '🔄 자동 시연';
+                btn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+            } else {
+                // 자동 시연 시작
+                isAutoDemo = true;
+                btn.textContent = '⏸️ 시연 중지';
+                btn.style.background = 'linear-gradient(135deg, #e67e22, #d35400)';
+                
+                const sequence = ['minimal', 'intermediate', 'maximal'];
+                let index = 0;
+                
+                autoInterval = setInterval(() => {
+                    setAfterload(sequence[index]);
+                    index = (index + 1) % sequence.length;
+                }, 4000);
+                
+                // 첫 번째 단계 즉시 실행
+                setAfterload(sequence[0]);
+            }
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            setAfterload('minimal');
+            
+            // 키보드 단축키
+            document.addEventListener('keydown', function(e) {
+                switch(e.key) {
+                    case '1':
+                        setAfterload('minimal');
+                        break;
+                    case '2':
+                        setAfterload('intermediate');
+                        break;
+                    case '3':
+                        setAfterload('maximal');
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        toggleAutoDemo();
+                        break;
+                }
+            });
+
+            console.log('🔬 Afterload 시뮬레이션이 준비되었습니다!');
+            console.log('키보드 단축키: 1(최소), 2(중간), 3(최대), Space(자동시연)');
+        });
+    </script>
+</body>
+</html>
