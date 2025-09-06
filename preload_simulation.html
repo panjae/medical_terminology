@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골격근 Preload 효과 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(44, 62, 80, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #34495e;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header h2 {
+            font-size: 1.8em;
+            color: #34495e;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .controls-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            border-left: 5px solid #34495e;
+        }
+        
+        .section-title {
+            font-size: 1.4em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-label {
+            display: block;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .preload-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .btn-short {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .btn-optimal {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        
+        .btn-stretched {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .btn-auto {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        
+        .current-status {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+            margin-top: 20px;
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .status-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        .status-value {
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .simulation-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #ecf0f1;
+            position: relative;
+            min-height: 500px;
+        }
+        
+        .muscle-setup {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        /* Muscle fiber structure */
+        .muscle-fiber {
+            position: absolute;
+            top: 150px;
+            left: 100px;
+            width: 400px;
+            height: 80px;
+            background: linear-gradient(90deg, #34495e, #2c3e50);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 1.5s ease;
+            z-index: 2;
+            border: 3px solid #7f8c8d;
+        }
+        
+        /* Sarcomeres inside muscle fiber */
+        .sarcomere-container {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            width: 360px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+        
+        .sarcomere {
+            width: 35px;
+            height: 50px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+            transition: all 1.5s ease;
+        }
+        
+        /* Actin and Myosin filaments inside sarcomeres */
+        .actin-filament {
+            position: absolute;
+            top: 15px;
+            left: 2px;
+            width: 30px;
+            height: 3px;
+            background: #27ae60;
+            border-radius: 2px;
+        }
+        
+        .myosin-filament {
+            position: absolute;
+            top: 25px;
+            left: 5px;
+            width: 24px;
+            height: 5px;
+            background: #e74c3c;
+            border-radius: 3px;
+        }
+        
+        .actin-right {
+            top: 32px;
+            left: 2px;
+        }
+        
+        /* Preload weights */
+        .preload-weight {
+            position: absolute;
+            top: 250px;
+            left: 50px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #7f8c8d, #95a5a6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 1s ease;
+            z-index: 3;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .preload-weight-right {
+            left: 520px;
+        }
+        
+        /* Connecting ropes */
+        .rope-left {
+            position: absolute;
+            top: 185px;
+            left: 80px;
+            width: 4px;
+            height: 65px;
+            background: #8b4513;
+            z-index: 1;
+        }
+        
+        .rope-right {
+            position: absolute;
+            top: 185px;
+            left: 520px;
+            width: 4px;
+            height: 65px;
+            background: #8b4513;
+            z-index: 1;
+        }
+        
+        .rope-horizontal {
+            position: absolute;
+            top: 187px;
+            left: 82px;
+            width: 440px;
+            height: 4px;
+            background: #8b4513;
+            z-index: 1;
+        }
+        
+        /* Length measurement indicators */
+        .length-indicator {
+            position: absolute;
+            top: 120px;
+            left: 100px;
+            width: 400px;
+            height: 20px;
+            border-top: 2px solid #3498db;
+            border-bottom: 2px solid #3498db;
+            transition: all 1.5s ease;
+        }
+        
+        .length-marker {
+            position: absolute;
+            width: 2px;
+            height: 30px;
+            background: #3498db;
+            top: -5px;
+        }
+        
+        .length-marker-left {
+            left: 0;
+        }
+        
+        .length-marker-right {
+            right: 0;
+        }
+        
+        .length-value {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: all 1.5s ease;
+        }
+        
+        /* Tension gauge */
+        .tension-gauge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(52, 73, 94, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            min-width: 200px;
+        }
+        
+        .gauge-title {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .tension-bar {
+            width: 150px;
+            height: 25px;
+            background: #ecf0f1;
+            border-radius: 12px;
+            margin: 10px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .tension-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            transition: width 1.5s ease;
+            border-radius: 12px;
+        }
+        
+        .optimal-zone {
+            position: absolute;
+            left: 60%;
+            width: 20%;
+            height: 100%;
+            background: rgba(39, 174, 96, 0.3);
+            border: 2px solid #27ae60;
+        }
+        
+        /* Length-Tension Graph */
+        .graph-section {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border-left: 5px solid #34495e;
+        }
+        
+        .graph-container {
+            position: relative;
+            width: 700px;
+            height: 400px;
+            margin: 20px auto;
+            background: white;
+            border: 2px solid #34495e;
+            border-radius: 10px;
+        }
+        
+        .graph-title {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .axis {
+            position: absolute;
+            background: #34495e;
+        }
+        
+        .x-axis {
+            bottom: 50px;
+            left: 60px;
+            width: 600px;
+            height: 3px;
+        }
+        
+        .y-axis {
+            bottom: 50px;
+            left: 60px;
+            width: 3px;
+            height: 300px;
+        }
+        
+        .axis-label {
+            position: absolute;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        
+        .x-label {
+            bottom: 20px;
+            left: 320px;
+        }
+        
+        .y-label {
+            top: 40px;
+            left: 5px;
+            transform: rotate(-90deg);
+        }
+        
+        /* Length-tension curve */
+        .length-tension-curve {
+            position: absolute;
+            bottom: 53px;
+            left: 63px;
+            width: 594px;
+            height: 294px;
+        }
+        
+        .curve-path {
+            stroke: #e74c3c;
+            stroke-width: 4;
+            fill: none;
+        }
+        
+        .optimal-range {
+            fill: rgba(39, 174, 96, 0.2);
+            stroke: #27ae60;
+            stroke-width: 2;
+        }
+        
+        .current-point {
+            fill: #3498db;
+            stroke: #2980b9;
+            stroke-width: 3;
+            r: 10;
+            transition: all 1s ease;
+        }
+        
+        /* Grid lines */
+        .grid-line {
+            stroke: #bdc3c7;
+            stroke-width: 1;
+            stroke-dasharray: 5,5;
+        }
+        
+        /* Scale markers */
+        .scale-marker {
+            position: absolute;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        /* Detailed explanation cards */
+        .explanation-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .explanation-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .card-content {
+            color: #34495e;
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+        
+        .card-content ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .card-content li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .card-content li:before {
+            content: "▶ ";
+            color: #3498db;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .card-content li:last-child {
+            border-bottom: none;
+        }
+        
+        /* Filament overlap visualization */
+        .overlap-indicator {
+            position: absolute;
+            top: 340px;
+            left: 100px;
+            width: 400px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #2c3e50;
+            transition: all 1.5s ease;
+        }
+        
+        /* Animations */
+        @keyframes tension-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        
+        .pulsing {
+            animation: tension-pulse 2s infinite;
+        }
+        
+        /* State-specific styles */
+        .state-short .muscle-fiber {
+            width: 280px;
+            left: 160px;
+        }
+        
+        .state-short .length-indicator {
+            width: 280px;
+            left: 160px;
+        }
+        
+        .state-short .rope-horizontal {
+            width: 280px;
+            left: 162px;
+        }
+        
+        .state-short .rope-right {
+            left: 440px;
+        }
+        
+        .state-optimal .muscle-fiber {
+            width: 400px;
+            left: 100px;
+        }
+        
+        .state-stretched .muscle-fiber {
+            width: 520px;
+            left: 40px;
+        }
+        
+        .state-stretched .length-indicator {
+            width: 520px;
+            left: 40px;
+        }
+        
+        .state-stretched .rope-horizontal {
+            width: 520px;
+            left: 42px;
+        }
+        
+        .state-stretched .rope-left {
+            left: 20px;
+        }
+        
+        .state-stretched .rope-right {
+            left: 560px;
+        }
+        
+        .state-stretched .preload-weight {
+            left: 10px;
+        }
+        
+        .state-stretched .preload-weight-right {
+            left: 570px;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .graph-container {
+                width: 100%;
+                max-width: 700px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .muscle-setup {
+                transform: scale(0.7);
+                margin: -50px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 골격근 생리학</h1>
+            <h2>Preload 효과 시뮬레이션</h2>
+            <p>Skeletal Muscle Mechanics: Length-Tension Relationship</p>
+        </div>
+
+        <div class="main-content">
+            <div class="controls-section">
+                <h3 class="section-title">📏 근육 길이 조건 설정</h3>
+                
+                <div class="control-group">
+                    <label class="control-label">Preload 조건 선택:</label>
+                    <div class="preload-buttons">
+                        <button class="btn btn-short" onclick="setPreload('short')">
+                            🔴 짧은 길이 (Low Preload)<br><small>부족한 초기 신장</small>
+                        </button>
+                        <button class="btn btn-optimal" onclick="setPreload('optimal')">
+                            🟢 최적 길이 (Optimal Preload)<br><small>최대 장력 발생 조건</small>
+                        </button>
+                        <button class="btn btn-stretched" onclick="setPreload('stretched')">
+                            🟡 과신장 길이 (High Preload)<br><small>과도한 초기 신장</small>
+                        </button>
+                        <button class="btn btn-auto" onclick="toggleAutoDemo()">
+                            🔄 자동 시연
+                        </button>
+                    </div>
+                </div>
+
+                <div class="current-status">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">📊 현재 측정값</h4>
+                    <div class="status-row">
+                        <span class="status-label">근육 길이:</span>
+                        <span class="status-value" id="currentLength">100% (최적)</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">발생 장력:</span>
+                        <span class="status-value" id="currentTension">100%</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">필라멘트 겹침:</span>
+                        <span class="status-value" id="currentOverlap">최적</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">수축 효율:</span>
+                        <span class="status-value" id="currentEfficiency">최대</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="simulation-area">
+                <h3 class="section-title">🏗️ 근육 길이-장력 시뮬레이션</h3>
+                
+                <div class="tension-gauge">
+                    <div class="gauge-title">발생 장력</div>
+                    <div class="tension-bar">
+                        <div class="optimal-zone"></div>
+                        <div class="tension-fill" id="tensionFill" style="width: 80%;"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <span id="tensionPercent">80%</span>
+                    </div>
+                </div>
+
+                <div class="muscle-setup" id="muscleSetup">
+                    <!-- Length measurement -->
+                    <div class="length-indicator" id="lengthIndicator">
+                        <div class="length-marker length-marker-left"></div>
+                        <div class="length-marker length-marker-right"></div>
+                        <div class="length-value" id="lengthValue">L₀ (최적 길이)</div>
+                    </div>
+
+                    <!-- Muscle fiber with sarcomeres -->
+                    <div class="muscle-fiber" id="muscleFiber">
+                        <div class="sarcomere-container">
+                            <div class="sarcomere" id="sarc1">
+                                <div class="actin-filament"></div>
+                                <div class="myosin-filament"></div>
+                                <div class="actin-filament actin-right"></div>
+                            </div>
+                            <div class="sarcomere" id="sarc2">
+                                <div class="actin-filament"></div>
+                                <div class="myosin-filament"></div>
+                                <div class="actin-filament actin-right"></div>
+                            </div>
+                            <div class="sarcomere" id="sarc3">
+                                <div class="actin-filament"></div>
+                                <div class="myosin-filament"></div>
+                                <div class="actin-filament actin-right"></div>
+                            </div>
+                            <div class="sarcomere" id="sarc4">
+                                <div class="actin-filament"></div>
+                                <div class="myosin-filament"></div>
+                                <div class="actin-filament actin-right"></div>
+                            </div>
+                            <div class="sarcomere" id="sarc5">
+                                <div class="actin-filament"></div>
+                                <div class="myosin-filament"></div>
+                                <div class="actin-filament actin-right"></div>
+                            </div>
+                            <div class="sarcomere" id="sarc6">
+                                <div class="actin-filament"></div>
+                                <div class="myosin-filament"></div>
+                                <div class="actin-filament actin-right"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preload weights -->
+                    <div class="preload-weight" id="preloadLeft">
+                        <div id="weightValueLeft">2kg</div>
+                    </div>
+                    <div class="preload-weight preload-weight-right" id="preloadRight">
+                        <div id="weightValueRight">2kg</div>
+                    </div>
+
+                    <!-- Connecting ropes -->
+                    <div class="rope-left" id="ropeLeft"></div>
+                    <div class="rope-right" id="ropeRight"></div>
+                    <div class="rope-horizontal" id="ropeHorizontal"></div>
+
+                    <!-- Overlap indicator -->
+                    <div class="overlap-indicator" id="overlapIndicator">
+                        액틴-미오신 겹침: 최적 상태
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="graph-section">
+            <h3 class="section-title">📈 Length-Tension 관계 곡선</h3>
+            <div class="graph-container">
+                <div class="graph-title">근육 길이 vs. 발생 장력</div>
+                
+                <!-- Axes -->
+                <div class="axis x-axis"></div>
+                <div class="axis y-axis"></div>
+                
+                <!-- Labels -->
+                <div class="axis-label x-label">Muscle Length (% of L₀) →</div>
+                <div class="axis-label y-label">Tension (%) →</div>
+                
+                <!-- Scale markers -->
+                <div class="scale-marker" style="bottom: 30px; left: 60px;">60</div>
+                <div class="scale-marker" style="bottom: 30px; left: 160px;">80</div>
+                <div class="scale-marker" style="bottom: 30px; left: 260px;">100</div>
+                <div class="scale-marker" style="bottom: 30px; left: 360px;">120</div>
+                <div class="scale-marker" style="bottom: 30px; left: 460px;">140</div>
+                <div class="scale-marker" style="bottom: 30px; left: 560px;">160</div>
+                <div class="scale-marker" style="bottom: 30px; left: 640px;">%</div>
+                
+                <div class="scale-marker" style="bottom: 50px; left: 25px;">0</div>
+                <div class="scale-marker" style="bottom: 110px; left: 25px;">20</div>
+                <div class="scale-marker" style="bottom: 170px; left: 25px;">40</div>
+                <div class="scale-marker" style="bottom: 230px; left: 25px;">60</div>
+                <div class="scale-marker" style="bottom: 290px; left: 25px;">80</div>
+                <div class="scale-marker" style="bottom: 330px; left: 15px;">100</div>
+
+                <!-- Length-tension curve -->
+                <svg class="length-tension-curve">
+                    <!-- Grid lines -->
+                    <line class="grid-line" x1="0" y1="0" x2="594" y2="0"></line>
+                    <line class="grid-line" x1="0" y1="60" x2="594" y2="60"></line>
+                    <line class="grid-line" x1="0" y1="120" x2="594" y2="120"></line>
+                    <line class="grid-line" x1="0" y1="180" x2="594" y2="180"></line>
+                    <line class="grid-line" x1="0" y1="240" x2="594" y2="240"></line>
+                    <line class="grid-line" x1="0" y1="294" x2="594" y2="294"></line>
+                    
+                    <line class="grid-line" x1="100" y1="0" x2="100" y2="294"></line>
+                    <line class="grid-line" x1="200" y1="0" x2="200" y2="294"></line>
+                    <line class="grid-line" x1="300" y1="0" x2="300" y2="294"></line>
+                    <line class="grid-line" x1="400" y1="0" x2="400" y2="294"></line>
+                    <line class="grid-line" x1="500" y1="0" x2="500" y2="294"></line>
+                    
+                    <!-- Optimal tension range -->
+                    <rect class="optimal-range" x="180" y="20" width="140" height="274"></rect>
+                    
+                    <!-- Length-tension curve (bell-shaped) -->
+                    <path class="curve-path" d="M 0 274 Q 50 200 100 120 Q 150 50 200 30 Q 250 10 300 30 Q 350 50 400 120 Q 450 200 500 274 Q 550 320 594 350"></path>
+                    
+                    <!-- Current point indicator -->
+                    <circle class="current-point" id="currentPoint" cx="200" cy="60" r="10"></circle>
+                </svg>
+            </div>
+        </div>
+
+        <div class="explanation-cards">
+            <div class="explanation-card">
+                <div class="card-title">💡 Preload의 정의</div>
+                <div class="card-content">
+                    <p><strong>Preload</strong>는 근육 수축이 시작되기 전에 이미 가해진 부하로, 근육의 초기 길이를 결정합니다.</p>
+                    <ul>
+                        <li>근육 섬유의 안정 시 길이</li>
+                        <li>Sarcomere의 초기 신장 정도</li>
+                        <li>Actin-Myosin 필라멘트 겹침 조절</li>
+                        <li>Frank-Starling 메커니즘의 기초</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🔴 짧은 길이 (Low Preload)</div>
+                <div class="card-content">
+                    <p>근육이 <strong>충분히 신장되지 않은</strong> 상태에서는 장력 발생이 제한됩니다.</p>
+                    <ul>
+                        <li>Actin 필라멘트 간 간섭</li>
+                        <li>Cross-bridge 형성 제한</li>
+                        <li>부분적 활성화만 가능</li>
+                        <li>효율성 저하</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🟢 최적 길이 (Optimal Preload)</div>
+                <div class="card-content">
+                    <p><strong>L₀ (최적 길이)</strong>에서 최대 장력을 발생시킬 수 있습니다.</p>
+                    <ul>
+                        <li>최대 Actin-Myosin 겹침</li>
+                        <li>모든 Cross-bridge 활성화</li>
+                        <li>100% 장력 발생</li>
+                        <li>최고 효율성</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🟡 과신장 길이 (High Preload)</div>
+                <div class="card-content">
+                    <p>근육이 <strong>과도하게 신장된</strong> 상태에서는 겹침 부족으로 장력이 감소합니다.</p>
+                    <ul>
+                        <li>필라멘트 겹침 감소</li>
+                        <li>Cross-bridge 접촉 제한</li>
+                        <li>장력 발생 능력 저하</li>
+                        <li>에너지 낭비 증가</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🏥 Frank-Starling 메커니즘</div>
+                <div class="card-content">
+                    <p>심장근육에서 특히 중요한 <strong>자동조절 메커니즘</strong>입니다.</p>
+                    <ul>
+                        <li>정맥환류량 ↑ → 심실 충만량 ↑</li>
+                        <li>심근 초기 길이 증가</li>
+                        <li>수축력 자동 증가</li>
+                        <li>박출량 자동 조절</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🔬 분자적 메커니즘</div>
+                <div class="card-content">
+                    <p><strong>Sliding Filament Theory</strong>에 기반한 길이-장력 관계입니다.</p>
+                    <ul>
+                        <li>Actin-Myosin 필라멘트 겹침 정도</li>
+                        <li>Cross-bridge 형성 가능 부위</li>
+                        <li>Ca²⁺ 민감도 변화</li>
+                        <li>Cooperative binding 효과</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPreloadType = 'optimal';
+        let isAutoDemo = false;
+        let autoInterval;
+
+        // Preload 설정 함수
+        function setPreload(type) {
+            currentPreloadType = type;
+            const muscleSetup = document.getElementById('muscleSetup');
+            const tensionFill = document.getElementById('tensionFill');
+            const currentPoint = document.getElementById('currentPoint');
+            const overlapIndicator = document.getElementById('overlapIndicator');
+            
+            // 기존 상태 클래스 제거
+            muscleSetup.classList.remove('state-short', 'state-optimal', 'state-stretched');
+            
+            let length, tension, overlap, efficiency, pointX, pointY, fillColor, tensionValue;
+
+            switch(type) {
+                case 'short':
+                    muscleSetup.classList.add('state-short');
+                    length = '70% (짧음)';
+                    tension = '40%';
+                    overlap = '과도';
+                    efficiency = '낮음';
+                    pointX = 100;  // 70% length position
+                    pointY = 180;  // 40% tension
+                    fillColor = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+                    tensionValue = '40%';
+                    overlapIndicator.textContent = '액틴-미오신 겹침: 과도한 상태 (간섭 발생)';
+                    overlapIndicator.style.background = 'rgba(231, 76, 60, 0.1)';
+                    break;
+
+                case 'optimal':
+                    muscleSetup.classList.add('state-optimal');
+                    length = '100% (최적)';
+                    tension = '100%';
+                    overlap = '최적';
+                    efficiency = '최대';
+                    pointX = 200;  // 100% length position
+                    pointY = 30;   // 100% tension
+                    fillColor = 'linear-gradient(90deg, #27ae60, #2ecc71)';
+                    tensionValue = '100%';
+                    overlapIndicator.textContent = '액틴-미오신 겹침: 최적 상태 (최대 효율)';
+                    overlapIndicator.style.background = 'rgba(39, 174, 96, 0.1)';
+                    break;
+
+                case 'stretched':
+                    muscleSetup.classList.add('state-stretched');
+                    length = '130% (과신장)';
+                    tension = '50%';
+                    overlap = '부족';
+                    efficiency = '중간';
+                    pointX = 400;  // 130% length position
+                    pointY = 150;  // 50% tension
+                    fillColor = 'linear-gradient(90deg, #f39c12, #e67e22)';
+                    tensionValue = '50%';
+                    overlapIndicator.textContent = '액틴-미오신 겹침: 부족한 상태 (접촉 제한)';
+                    overlapIndicator.style.background = 'rgba(243, 156, 18, 0.1)';
+                    break;
+            }
+
+            // UI 업데이트
+            tensionFill.style.width = tension;
+            tensionFill.style.background = fillColor;
+            document.getElementById('tensionPercent').textContent = tensionValue;
+            
+            // 상태 정보 업데이트
+            document.getElementById('currentLength').textContent = length;
+            document.getElementById('currentTension').textContent = tension;
+            document.getElementById('currentOverlap').textContent = overlap;
+            document.getElementById('currentEfficiency').textContent = efficiency;
+            
+            // 길이 표시 업데이트
+            document.getElementById('lengthValue').textContent = 
+                type === 'short' ? '0.7L₀' : 
+                type === 'optimal' ? 'L₀ (최적 길이)' : 
+                '1.3L₀';
+            
+            // 그래프 포인트 이동
+            currentPoint.setAttribute('cx', pointX);
+            currentPoint.setAttribute('cy', pointY);
+            
+            // 포인트 색상 변경
+            switch(type) {
+                case 'short':
+                    currentPoint.style.fill = '#e74c3c';
+                    currentPoint.style.stroke = '#c0392b';
+                    break;
+                case 'optimal':
+                    currentPoint.style.fill = '#27ae60';
+                    currentPoint.style.stroke = '#229954';
+                    break;
+                case 'stretched':
+                    currentPoint.style.fill = '#f39c12';
+                    currentPoint.style.stroke = '#e67e22';
+                    break;
+            }
+
+            // 장력 게이지 펄스 효과 (최적 길이에서만)
+            const tensionGauge = document.querySelector('.tension-gauge');
+            tensionGauge.classList.remove('pulsing');
+            if (type === 'optimal') {
+                setTimeout(() => {
+                    tensionGauge.classList.add('pulsing');
+                }, 500);
+            }
+        }
+
+        // 자동 시연 토글
+        function toggleAutoDemo() {
+            const btn = document.querySelector('.btn-auto');
+            
+            if (isAutoDemo) {
+                // 자동 시연 중지
+                isAutoDemo = false;
+                clearInterval(autoInterval);
+                btn.textContent = '🔄 자동 시연';
+                btn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+            } else {
+                // 자동 시연 시작
+                isAutoDemo = true;
+                btn.textContent = '⏸️ 시연 중지';
+                btn.style.background = 'linear-gradient(135deg, #e67e22, #d35400)';
+                
+                const sequence = ['short', 'optimal', 'stretched'];
+                let index = 0;
+                
+                autoInterval = setInterval(() => {
+                    setPreload(sequence[index]);
+                    index = (index + 1) % sequence.length;
+                }, 4000);
+                
+                // 첫 번째 단계 즉시 실행
+                setPreload(sequence[0]);
+            }
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            setPreload('optimal');
+            
+            // 키보드 단축키
+            document.addEventListener('keydown', function(e) {
+                switch(e.key) {
+                    case '1':
+                        setPreload('short');
+                        break;
+                    case '2':
+                        setPreload('optimal');
+                        break;
+                    case '3':
+                        setPreload('stretched');
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        toggleAutoDemo();
+                        break;
+                }
+            });
+
+            console.log('🔬 Preload 시뮬레이션이 준비되었습니다!');
+            console.log('키보드 단축키: 1(짧음), 2(최적), 3(과신장), Space(자동시연)');
+        });
+    </script>
+</body>
+</html>
