@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ca²⁺ Channels & Excitation-Contraction Coupling</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3f66 0%, #2c5282 50%, #3182ce 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #2d3748;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.8em;
+            color: #1a202c;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.3em;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            min-width: 140px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .btn-step1 { background: linear-gradient(135deg, #718096, #4a5568); }
+        .btn-step2 { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+        .btn-step3 { background: linear-gradient(135deg, #e53e3e, #c53030); }
+        .btn-step4 { background: linear-gradient(135deg, #3182ce, #2c5282); }
+        .btn-step5 { background: linear-gradient(135deg, #805ad5, #6b46c1); }
+        .btn-step6 { background: linear-gradient(135deg, #38a169, #2f855a); }
+        .btn-channels { background: linear-gradient(135deg, #319795, #2c7a7b); }
+        .btn-reset { background: linear-gradient(135deg, #2d3748, #1a202c); }
+        
+        .simulation-area {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            min-height: 700px;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .triad-structure {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            margin: 20px auto;
+        }
+        
+        /* T-tubule structure */
+        .t-tubule {
+            position: absolute;
+            top: 250px;
+            left: 100px;
+            width: 400px;
+            height: 60px;
+            background: linear-gradient(90deg, #2d3748 0%, #4a5568 50%, #2d3748 100%);
+            border-radius: 30px;
+            z-index: 3;
+            box-shadow: 0 6px 20px rgba(45, 55, 72, 0.3);
+        }
+        
+        .t-tubule-label {
+            position: absolute;
+            top: 320px;
+            left: 280px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            text-align: center;
+        }
+        
+        /* T-tubule lumen */
+        .t-tubule-lumen {
+            position: absolute;
+            top: 265px;
+            left: 120px;
+            width: 360px;
+            height: 30px;
+            background: linear-gradient(90deg, #bee3f8, #90cdf4, #bee3f8);
+            border-radius: 15px;
+            z-index: 4;
+            opacity: 0.8;
+        }
+        
+        /* Sarcoplasmic Reticulum - Terminal Cisternae */
+        .sr-cisterna-left {
+            position: absolute;
+            top: 150px;
+            left: 50px;
+            width: 120px;
+            height: 200px;
+            background: linear-gradient(135deg, #805ad5, #9f7aea);
+            border-radius: 20px;
+            z-index: 2;
+            box-shadow: 0 6px 20px rgba(128, 90, 213, 0.3);
+        }
+        
+        .sr-cisterna-right {
+            position: absolute;
+            top: 150px;
+            right: 50px;
+            width: 120px;
+            height: 200px;
+            background: linear-gradient(135deg, #805ad5, #9f7aea);
+            border-radius: 20px;
+            z-index: 2;
+            box-shadow: 0 6px 20px rgba(128, 90, 213, 0.3);
+        }
+        
+        /* SR Labels */
+        .sr-label-left {
+            position: absolute;
+            top: 120px;
+            left: 70px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #553c9a;
+            text-align: center;
+            width: 80px;
+        }
+        
+        .sr-label-right {
+            position: absolute;
+            top: 120px;
+            right: 70px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #553c9a;
+            text-align: center;
+            width: 80px;
+        }
+        
+        /* L-type Ca2+ Channels (DHPRs) */
+        .ltype-channel {
+            position: absolute;
+            width: 16px;
+            height: 24px;
+            background: linear-gradient(180deg, #ed8936, #dd6b20);
+            border-radius: 8px;
+            z-index: 5;
+            transition: all 1s ease;
+            box-shadow: 0 3px 8px rgba(237, 137, 54, 0.4);
+        }
+        
+        .ltype1 { top: 310px; left: 180px; }
+        .ltype2 { top: 310px; left: 220px; }
+        .ltype3 { top: 310px; left: 260px; }
+        .ltype4 { top: 310px; left: 300px; }
+        .ltype5 { top: 310px; left: 340px; }
+        .ltype6 { top: 310px; left: 380px; }
+        .ltype7 { top: 310px; left: 420px; }
+        
+        /* T-type Ca2+ Channels */
+        .ttype-channel {
+            position: absolute;
+            width: 12px;
+            height: 18px;
+            background: linear-gradient(180deg, #38a169, #2f855a);
+            border-radius: 6px;
+            z-index: 5;
+            transition: all 1s ease;
+            box-shadow: 0 3px 8px rgba(56, 161, 105, 0.4);
+        }
+        
+        .ttype1 { top: 240px; left: 160px; }
+        .ttype2 { top: 240px; left: 200px; }
+        .ttype3 { top: 240px; left: 280px; }
+        .ttype4 { top: 240px; left: 320px; }
+        .ttype5 { top: 240px; left: 400px; }
+        .ttype6 { top: 240px; left: 440px; }
+        
+        /* Store-Operated Ca2+ Channels (SOCC) */
+        .socc-channel {
+            position: absolute;
+            width: 14px;
+            height: 20px;
+            background: linear-gradient(180deg, #319795, #2c7a7b);
+            border-radius: 7px;
+            z-index: 5;
+            transition: all 1s ease;
+            box-shadow: 0 3px 8px rgba(49, 151, 149, 0.4);
+        }
+        
+        .socc1 { top: 235px; left: 130px; }
+        .socc2 { top: 235px; left: 240px; }
+        .socc3 { top: 235px; left: 360px; }
+        .socc4 { top: 235px; left: 470px; }
+        
+        /* Ryanodine Receptors (RyRs) */
+        .ryr-receptor {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            border-radius: 10px;
+            z-index: 5;
+            transition: all 1s ease;
+            box-shadow: 0 3px 8px rgba(229, 62, 62, 0.4);
+        }
+        
+        .ryr1 { top: 330px; left: 70px; }
+        .ryr2 { top: 340px; left: 90px; }
+        .ryr3 { top: 350px; left: 110px; }
+        .ryr4 { top: 340px; left: 130px; }
+        .ryr5 { top: 330px; left: 150px; }
+        .ryr6 { top: 330px; right: 70px; }
+        .ryr7 { top: 340px; right: 90px; }
+        .ryr8 { top: 350px; right: 110px; }
+        .ryr9 { top: 340px; right: 130px; }
+        .ryr10 { top: 330px; right: 150px; }
+        
+        /* IP3 Receptors */
+        .ip3-receptor {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #9f7aea, #805ad5);
+            border-radius: 9px;
+            z-index: 5;
+            transition: all 1s ease;
+            box-shadow: 0 3px 8px rgba(159, 122, 234, 0.4);
+        }
+        
+        .ip3r1 { top: 180px; left: 85px; }
+        .ip3r2 { top: 200px; left: 105px; }
+        .ip3r3 { top: 180px; right: 85px; }
+        .ip3r4 { top: 200px; right: 105px; }
+        
+        /* Ca2+ ions in SR */
+        .ca-ion-sr {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #ffd700, #f6e05e);
+            border-radius: 50%;
+            z-index: 4;
+            opacity: 0.9;
+            transition: all 1s ease;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #744210;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* Ca2+ ions released */
+        .ca-ion-released {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, #ffd700, #f6e05e);
+            border-radius: 50%;
+            z-index: 6;
+            opacity: 0;
+            transition: all 1s ease;
+            font-size: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #744210;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* Action potential wave */
+        .action-potential {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle, #e53e3e, #c53030);
+            border-radius: 50%;
+            z-index: 7;
+            opacity: 0;
+            top: 270px;
+            left: 110px;
+            box-shadow: 0 0 20px rgba(229, 62, 62, 0.6);
+        }
+        
+        /* Channel comparison panel */
+        .channel-comparison {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            z-index: 10;
+            padding: 40px;
+            overflow-y: auto;
+        }
+        
+        .comparison-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .comparison-title {
+            font-size: 2em;
+            color: #1a202c;
+            margin-bottom: 10px;
+        }
+        
+        .comparison-subtitle {
+            font-size: 1.2em;
+            color: #4a5568;
+        }
+        
+        .channel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .channel-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-left: 6px solid #3182ce;
+            transition: transform 0.3s ease;
+        }
+        
+        .channel-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .channel-card.ltype { border-left-color: #ed8936; }
+        .channel-card.ttype { border-left-color: #38a169; }
+        .channel-card.socc { border-left-color: #319795; }
+        .channel-card.ryr { border-left-color: #e53e3e; }
+        .channel-card.ip3r { border-left-color: #9f7aea; }
+        
+        .channel-name {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .channel-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .channel-properties {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .channel-properties li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+        
+        .channel-properties li:last-child {
+            border-bottom: none;
+        }
+        
+        .property-label {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .property-value {
+            color: #4a5568;
+            margin-left: 10px;
+        }
+        
+        .close-comparison {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .close-comparison:hover {
+            background: #c53030;
+            transform: scale(1.05);
+        }
+        
+        /* Status indicators */
+        .step-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            font-weight: 600;
+            min-width: 250px;
+            border-left: 5px solid #3182ce;
+        }
+        
+        .step-number {
+            font-size: 1.4em;
+            color: #e53e3e;
+            margin-bottom: 8px;
+        }
+        
+        .step-description {
+            font-size: 1em;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        
+        /* Voltage indicator */
+        .voltage-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            font-weight: 600;
+            min-width: 200px;
+            border-left: 5px solid #ed8936;
+        }
+        
+        .voltage-value {
+            font-size: 1.3em;
+            color: #ed8936;
+            margin-bottom: 8px;
+        }
+        
+        .voltage-bar {
+            width: 150px;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .voltage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #38a169, #ed8936, #e53e3e);
+            transition: width 1s ease;
+            border-radius: 6px;
+            width: 20%;
+        }
+        
+        .status-display {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .status-title {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 15px;
+        }
+        
+        .status-description {
+            font-size: 1.3em;
+            color: #4a5568;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .mechanism-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+        
+        .detail-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 6px solid #3182ce;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .detail-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            font-weight: 700;
+            font-size: 1.4em;
+            color: #1a202c;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-content {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .card-content li {
+            padding: 10px 0;
+            font-size: 1.1em;
+            line-height: 1.6;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .card-content li:last-child {
+            border-bottom: none;
+        }
+        
+        .card-content li:before {
+            content: "▶ ";
+            color: #3182ce;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 40px;
+            padding: 25px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #2d3748;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        /* Animations */
+        @keyframes propagate {
+            0% { opacity: 1; transform: scale(0.8); left: 110px; }
+            25% { opacity: 1; transform: scale(1.2); left: 200px; }
+            50% { opacity: 1; transform: scale(1); left: 300px; }
+            75% { opacity: 1; transform: scale(1.2); left: 400px; }
+            100% { opacity: 0; transform: scale(0.8); left: 480px; }
+        }
+        
+        @keyframes ltype-activation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); box-shadow: 0 0 20px #ed8936; }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes ttype-activation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); box-shadow: 0 0 15px #38a169; }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes socc-activation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.25); box-shadow: 0 0 18px #319795; }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes ryr-activation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); box-shadow: 0 0 20px #e53e3e; }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes ip3r-activation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); box-shadow: 0 0 18px #9f7aea; }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes ca-release {
+            0% { transform: translateY(0) scale(0.8); opacity: 0; }
+            50% { transform: translateY(40px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(80px) scale(1); opacity: 1; }
+        }
+        
+        @keyframes ca-reuptake {
+            0% { transform: translateY(80px) scale(1); opacity: 1; }
+            100% { transform: translateY(0) scale(0.8); opacity: 0; }
+        }
+        
+        .ltype-active { animation: ltype-activation 1.5s infinite; }
+        .ttype-active { animation: ttype-activation 1.8s infinite; }
+        .socc-active { animation: socc-activation 2s infinite; }
+        .ryr-active { animation: ryr-activation 1.5s infinite; }
+        .ip3r-active { animation: ip3r-activation 1.7s infinite; }
+        
+        .floating { animation: ca-release 2s ease-out; }
+        .retracting { animation: ca-reuptake 2s ease-in; }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .triad-structure {
+                transform: scale(0.6);
+                margin: -70px auto;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                min-width: 200px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .channel-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Ca²⁺ Channels & Excitation-Contraction Coupling</h1>
+            <p>칼슘 채널 종류와 골격근 흥분-수축 연결 메커니즘</p>
+            <div class="subtitle">Calcium Channel Types & Triad Structure Simulation</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-step1" onclick="step1()">1. 휴식상태</button>
+            <button class="btn btn-step2" onclick="step2()">2. 활동전위</button>
+            <button class="btn btn-step3" onclick="step3()">3. L-type 활성화</button>
+            <button class="btn btn-step4" onclick="step4()">4. RyR 개방</button>
+            <button class="btn btn-step5" onclick="step5()">5. Ca²⁺ 방출</button>
+            <button class="btn btn-step6" onclick="step6()">6. 재흡수</button>
+            <button class="btn btn-channels" onclick="showChannelComparison()">📋 채널 비교</button>
+            <button class="btn btn-reset" onclick="resetSimulation()">↺ 초기화</button>
+        </div>
+
+        <div class="simulation-area">
+            <div class="step-indicator" id="stepIndicator">
+                <div class="step-number" id="stepNumber">Step 1</div>
+                <div class="step-description" id="stepDescription">휴식 상태 - 다양한 Ca²⁺ 채널들</div>
+            </div>
+
+            <div class="voltage-indicator">
+                <div class="voltage-value" id="voltageValue">막전위: -70 mV</div>
+                <div class="voltage-bar">
+                    <div class="voltage-fill" id="voltageFill"></div>
+                </div>
+                <div style="font-size: 0.9em; color: #718096; margin-top: 8px;">Sarcolemma Potential</div>
+            </div>
+
+            <div class="triad-structure">
+                <!-- T-tubule -->
+                <div class="t-tubule"></div>
+                <div class="t-tubule-lumen"></div>
+                <div class="t-tubule-label">T-tubule (Transverse tubule)</div>
+                
+                <!-- Sarcoplasmic Reticulum -->
+                <div class="sr-cisterna-left"></div>
+                <div class="sr-cisterna-right"></div>
+                <div class="sr-label-left">Terminal<br>Cisterna</div>
+                <div class="sr-label-right">Terminal<br>Cisterna</div>
+                
+                <!-- Action Potential -->
+                <div class="action-potential" id="actionPotential"></div>
+                
+                <!-- L-type Ca2+ Channels (DHPRs) -->
+                <div class="ltype-channel ltype1" id="ltype1" title="L-type Ca²⁺ Channel (DHPR)"></div>
+                <div class="ltype-channel ltype2" id="ltype2" title="L-type Ca²⁺ Channel (DHPR)"></div>
+                <div class="ltype-channel ltype3" id="ltype3" title="L-type Ca²⁺ Channel (DHPR)"></div>
+                <div class="ltype-channel ltype4" id="ltype4" title="L-type Ca²⁺ Channel (DHPR)"></div>
+                <div class="ltype-channel ltype5" id="ltype5" title="L-type Ca²⁺ Channel (DHPR)"></div>
+                <div class="ltype-channel ltype6" id="ltype6" title="L-type Ca²⁺ Channel (DHPR)"></div>
+                <div class="ltype-channel ltype7" id="ltype7" title="L-type Ca²⁺ Channel (DHPR)"></div>
+                
+                <!-- T-type Ca2+ Channels -->
+                <div class="ttype-channel ttype1" id="ttype1" title="T-type Ca²⁺ Channel"></div>
+                <div class="ttype-channel ttype2" id="ttype2" title="T-type Ca²⁺ Channel"></div>
+                <div class="ttype-channel ttype3" id="ttype3" title="T-type Ca²⁺ Channel"></div>
+                <div class="ttype-channel ttype4" id="ttype4" title="T-type Ca²⁺ Channel"></div>
+                <div class="ttype-channel ttype5" id="ttype5" title="T-type Ca²⁺ Channel"></div>
+                <div class="ttype-channel ttype6" id="ttype6" title="T-type Ca²⁺ Channel"></div>
+                
+                <!-- Store-Operated Ca2+ Channels -->
+                <div class="socc-channel socc1" id="socc1" title="Store-Operated Ca²⁺ Channel"></div>
+                <div class="socc-channel socc2" id="socc2" title="Store-Operated Ca²⁺ Channel"></div>
+                <div class="socc-channel socc3" id="socc3" title="Store-Operated Ca²⁺ Channel"></div>
+                <div class="socc-channel socc4" id="socc4" title="Store-Operated Ca²⁺ Channel"></div>
+                
+                <!-- Ryanodine Receptors -->
+                <div class="ryr-receptor ryr1" id="ryr1" title="Ryanodine Receptor (RyR1)"></div>
+                <div class="ryr-receptor ryr2" id="ryr2" title="Ryanodine Receptor (RyR1)"></div>
+                <div class="ryr-receptor ryr3" id="ryr3" title="Ryanodine Receptor (RyR1)"></div>
+                <div class="ryr-receptor ryr4" id="ryr4" title="Ryanodine Receptor (RyR1)"></div>
+                <div class="ryr-receptor ryr5" id="ryr5" title="Ryanodine Receptor (RyR1)"></div>
+                <div class="ryr-receptor ryr6" id="ryr6" title="Ryanodine Receptor (RyR1)"></div>
+                <div class="ryr-receptor ryr7" id="ryr7" title="Ryanodine Receptor (RyR1)"></div>
+                <div class="ryr-receptor ryr8" id="ryr8" title="Ryanodine Receptor (RyR1)"></div>
+                <div class="ryr-receptor ryr9" id="ryr9" title="Ryanodine Receptor (RyR1)"></div>
+                <div class="ryr-receptor ryr10" id="ryr10" title="Ryanodine Receptor (RyR1)"></div>
+                
+                <!-- IP3 Receptors -->
+                <div class="ip3-receptor ip3r1" id="ip3r1" title="IP₃ Receptor"></div>
+                <div class="ip3-receptor ip3r2" id="ip3r2" title="IP₃ Receptor"></div>
+                <div class="ip3-receptor ip3r3" id="ip3r3" title="IP₃ Receptor"></div>
+                <div class="ip3-receptor ip3r4" id="ip3r4" title="IP₃ Receptor"></div>
+                
+                <!-- Ca2+ ions in SR -->
+                <div class="ca-ion-sr" id="ca-sr-1" style="top: 180px; left: 80px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-2" style="top: 200px; left: 100px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-3" style="top: 220px; left: 85px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-4" style="top: 240px; left: 110px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-5" style="top: 260px; left: 95px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-6" style="top: 280px; left: 75px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-7" style="top: 300px; left: 105px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-8" style="top: 180px; right: 80px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-9" style="top: 200px; right: 100px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-10" style="top: 220px; right: 85px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-11" style="top: 240px; right: 110px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-12" style="top: 260px; right: 95px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-13" style="top: 280px; right: 75px;">Ca</div>
+                <div class="ca-ion-sr" id="ca-sr-14" style="top: 300px; right: 105px;">Ca</div>
+                
+                <!-- Released Ca2+ ions -->
+                <div class="ca-ion-released" id="ca-rel-1" style="top: 370px; left: 200px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-2" style="top: 380px; left: 230px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-3" style="top: 390px; left: 260px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-4" style="top: 380px; left: 290px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-5" style="top: 370px; left: 320px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-6" style="top: 390px; left: 350px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-7" style="top: 380px; left: 380px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-8" style="top: 370px; left: 410px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-9" style="top: 400px; left: 240px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-10" style="top: 410px; left: 270px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-11" style="top: 400px; left: 300px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-12" style="top: 410px; left: 330px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-13" style="top: 400px; left: 360px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-14" style="top: 410px; left: 390px;">Ca</div>
+                <div class="ca-ion-released" id="ca-rel-15" style="top: 420px; left: 250px;">Ca</div>
+            </div>
+
+            <!-- Channel Comparison Panel -->
+            <div class="channel-comparison" id="channelComparison">
+                <button class="close-comparison" onclick="hideChannelComparison()">✕ 닫기</button>
+                
+                <div class="comparison-header">
+                    <h2 class="comparison-title">Ca²⁺ Channel 종류별 비교</h2>
+                    <p class="comparison-subtitle">Structure, Function & Pharmacological Properties</p>
+                </div>
+
+                <div class="channel-grid">
+                    <div class="channel-card ltype">
+                        <div class="channel-name">
+                            <div class="channel-icon" style="background: linear-gradient(135deg, #ed8936, #dd6b20);"></div>
+                            L-type Ca²⁺ Channels (DHPR)
+                        </div>
+                        <ul class="channel-properties">
+                            <li><span class="property-label">정식명칭:</span><span class="property-value">Cav1.1 (α1S subunit)</span></li>
+                            <li><span class="property-label">위치:</span><span class="property-value">T-tubule membrane</span></li>
+                            <li><span class="property-label">활성화:</span><span class="property-value">High voltage-activated (HVA)</span></li>
+                            <li><span class="property-label">역치전압:</span><span class="property-value">-30 to -20 mV</span></li>
+                            <li><span class="property-label">비활성화:</span><span class="property-value">Slow inactivation</span></li>
+                            <li><span class="property-label">주요기능:</span><span class="property-value">Voltage sensor for EC coupling</span></li>
+                            <li><span class="property-label">구조특징:</span><span class="property-value">Tetrad arrangement (4개 군집)</span></li>
+                            <li><span class="property-label">약물민감성:</span><span class="property-value">Dihydropyridines (DHP)</span></li>
+                            <li><span class="property-label">Ca²⁺ 유입:</span><span class="property-value">Minimal (주로 voltage sensor)</span></li>
+                            <li><span class="property-label">RyR 연결:</span><span class="property-value">Direct mechanical coupling</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="channel-card ttype">
+                        <div class="channel-name">
+                            <div class="channel-icon" style="background: linear-gradient(135deg, #38a169, #2f855a);"></div>
+                            T-type Ca²⁺ Channels
+                        </div>
+                        <ul class="channel-properties">
+                            <li><span class="property-label">정식명칭:</span><span class="property-value">Cav3.1, Cav3.2 (α1G, α1H)</span></li>
+                            <li><span class="property-label">위치:</span><span class="property-value">Sarcolemma, T-tubule</span></li>
+                            <li><span class="property-label">활성화:</span><span class="property-value">Low voltage-activated (LVA)</span></li>
+                            <li><span class="property-label">역치전압:</span><span class="property-value">-60 to -50 mV</span></li>
+                            <li><span class="property-label">비활성화:</span><span class="property-value">Fast inactivation</span></li>
+                            <li><span class="property-label">주요기능:</span><span class="property-value">Early depolarization, pacemaker</span></li>
+                            <li><span class="property-label">구조특징:</span><span class="property-value">Small single channel conductance</span></li>
+                            <li><span class="property-label">약물민감성:</span><span class="property-value">Ni²⁺, mibefradil</span></li>
+                            <li><span class="property-label">Ca²⁺ 유입:</span><span class="property-value">작은 양의 초기 유입</span></li>
+                            <li><span class="property-label">근발달:</span><span class="property-value">Myoblast differentiation</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="channel-card socc">
+                        <div class="channel-name">
+                            <div class="channel-icon" style="background: linear-gradient(135deg, #319795, #2c7a7b);"></div>
+                            Store-Operated Ca²⁺ Channels (SOCC)
+                        </div>
+                        <ul class="channel-properties">
+                            <li><span class="property-label">정식명칭:</span><span class="property-value">STIM1/Orai1 complex</span></li>
+                            <li><span class="property-label">위치:</span><span class="property-value">Sarcolemma, Tubular system</span></li>
+                            <li><span class="property-label">활성화:</span><span class="property-value">SR Ca²⁺ depletion</span></li>
+                            <li><span class="property-label">센서:</span><span class="property-value">STIM1 (SR Ca²⁺ sensor)</span></li>
+                            <li><span class="property-label">채널:</span><span class="property-value">Orai1 (CRAC channel)</span></li>
+                            <li><span class="property-label">주요기능:</span><span class="property-value">SR Ca²⁺ store refilling</span></li>
+                            <li><span class="property-label">구조특징:</span><span class="property-value">ER-PM junction formation</span></li>
+                            <li><span class="property-label">약물민감성:</span><span class="property-value">2-APB, SKF-96365</span></li>
+                            <li><span class="property-label">Ca²⁺ 유입:</span><span class="property-value">지속적이고 느린 유입</span></li>
+                            <li><span class="property-label">항상성:</span><span class="property-value">Ca²⁺ homeostasis 유지</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="channel-card ryr">
+                        <div class="channel-name">
+                            <div class="channel-icon" style="background: linear-gradient(135deg, #e53e3e, #c53030);"></div>
+                            Ryanodine Receptors (RyR)
+                        </div>
+                        <ul class="channel-properties">
+                            <li><span class="property-label">정식명칭:</span><span class="property-value">RyR1 (skeletal muscle type)</span></li>
+                            <li><span class="property-label">위치:</span><span class="property-value">SR terminal cisternae</span></li>
+                            <li><span class="property-label">활성화:</span><span class="property-value">DHPR mechanical coupling</span></li>
+                            <li><span class="property-label">크기:</span><span class="property-value">가장 큰 이온 채널 (2.2 MDa)</span></li>
+                            <li><span class="property-label">구조:</span><span class="property-value">Homotetrameric (4개 subunit)</span></li>
+                            <li><span class="property-label">주요기능:</span><span class="property-value">SR Ca²⁺ release channel</span></li>
+                            <li><span class="property-label">조절:</span><span class="property-value">Ca²⁺, Mg²⁺, ATP, calmodulin</span></li>
+                            <li><span class="property-label">약물민감성:</span><span class="property-value">Ryanodine, caffeine</span></li>
+                            <li><span class="property-label">Ca²⁺ 방출:</span><span class="property-value">대량의 빠른 방출</span></li>
+                            <li><span class="property-label">질환:</span><span class="property-value">Malignant hyperthermia</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="channel-card ip3r">
+                        <div class="channel-name">
+                            <div class="channel-icon" style="background: linear-gradient(135deg, #9f7aea, #805ad5);"></div>
+                            IP₃ Receptors (IP₃R)
+                        </div>
+                        <ul class="channel-properties">
+                            <li><span class="property-label">정식명칭:</span><span class="property-value">IP₃R1, IP₃R2, IP₃R3</span></li>
+                            <li><span class="property-label">위치:</span><span class="property-value">SR membrane (전체)</span></li>
+                            <li><span class="property-label">활성화:</span><span class="property-value">IP₃ binding</span></li>
+                            <li><span class="property-label">신호전달:</span><span class="property-value">PLC-IP₃ pathway</span></li>
+                            <li><span class="property-label">구조:</span><span class="property-value">Tetrameric, 6 TM domains</span></li>
+                            <li><span class="property-label">주요기능:</span><span class="property-value">Local Ca²⁺ signaling</span></li>
+                            <li><span class="property-label">조절:</span><span class="property-value">IP₃, Ca²⁺ (biphasic)</span></li>
+                            <li><span class="property-label">약물민감성:</span><span class="property-value">2-APB, xestospongin C</span></li>
+                            <li><span class="property-label">Ca²⁺ 방출:</span><span class="property-value">국소적, 진동성</span></li>
+                            <li><span class="property-label">근육에서:</span><span class="property-value">보조적 역할, 분화</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mechanism-details">
+                    <div class="detail-card">
+                        <div class="card-title">🔋 Voltage-Gated Channels</div>
+                        <ul class="card-content">
+                            <li>L-type: 고전압 활성화, 느린 비활성화</li>
+                            <li>T-type: 저전압 활성화, 빠른 비활성화</li>
+                            <li>전압 의존적 Ca²⁺ 유입</li>
+                            <li>막전위 변화에 즉각 반응</li>
+                            <li>흥분성 세포에서 주요 역할</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="card-title">🔄 Ligand-Gated Channels</div>
+                        <ul class="card-content">
+                            <li>RyR: 기계적 coupling, Ca²⁺ 조절</li>
+                            <li>IP₃R: IP₃ 결합, G-protein 신호</li>
+                            <li>세포내 Ca²⁺ store에서 방출</li>
+                            <li>신호 증폭 메커니즘</li>
+                            <li>Ca²⁺-induced Ca²⁺ release</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="card-title">🏪 Store-Operated Channels</div>
+                        <ul class="card-content">
+                            <li>STIM1: SR Ca²⁺ 센서 단백질</li>
+                            <li>Orai1: CRAC channel (Ca²⁺ 통로)</li>
+                            <li>Store depletion으로 활성화</li>
+                            <li>Ca²⁺ 항상성 유지</li>
+                            <li>장기간 Ca²⁺ 신호</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="card-title">⚡ Functional Integration</div>
+                        <ul class="card-content">
+                            <li>L-type + RyR: 주요 EC coupling</li>
+                            <li>T-type: 초기 depolarization</li>
+                            <li>SOCC: Ca²⁺ store 재충전</li>
+                            <li>IP₃R: 국소 Ca²⁺ 신호</li>
+                            <li>협동적 Ca²⁺ 조절</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-display">
+            <div class="status-title" id="statusTitle">Ca²⁺ Channels & Excitation-Contraction Coupling</div>
+            <div class="status-description" id="statusDescription">
+                골격근에서 다양한 Ca²⁺ 채널들이 협력하여 신경신호를 근수축으로 전환하는 복합적인 분자 메커니즘을 관찰하세요.
+            </div>
+        </div>
+
+        <div class="mechanism-details">
+            <div class="detail-card">
+                <div class="card-title">🔵 T-tubule System</div>
+                <ul class="card-content">
+                    <li>Sarcolemma의 invagination으로 형성</li>
+                    <li>근섬유 내부까지 활동전위 전달</li>
+                    <li>다양한 Ca²⁺ channels 분포</li>
+                    <li>Triad 구조의 중심 요소</li>
+                    <li>전기적 신호의 공간적 전파</li>
+                </ul>
+            </div>
+            
+            <div class="detail-card">
+                <div class="card-title">🟡 Primary Coupling (L-type + RyR)</div>
+                <ul class="card-content">
+                    <li>DHPR: voltage sensor 역할</li>
+                    <li>Physical coupling with RyR1</li>
+                    <li>Mechanical gating 메커니즘</li>
+                    <li>빠르고 강력한 Ca²⁺ 방출</li>
+                    <li>주요 근수축 개시 경로</li>
+                </ul>
+            </div>
+            
+            <div class="detail-card">
+                <div class="card-title">🟢 Secondary Pathways</div>
+                <ul class="card-content">
+                    <li>T-type: 초기 depolarization 지원</li>
+                    <li>SOCC: Ca²⁺ store 재충전</li>
+                    <li>IP₃R: 국소 Ca²⁺ 신호</li>
+                    <li>상호 보완적 기능</li>
+                    <li>Ca²⁺ 항상성 조절</li>
+                </ul>
+            </div>
+            
+            <div class="detail-card">
+                <div class="card-title">🟣 Clinical Relevance</div>
+                <ul class="card-content">
+                    <li>RyR1 mutations: Malignant hyperthermia</li>
+                    <li>DHPR defects: Hypokalemic paralysis</li>
+                    <li>Ca²⁺ channel blockers: 치료제</li>
+                    <li>근육 질환의 분자적 기전</li>
+                    <li>약물 표적으로서의 중요성</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #2d3748, #4a5568);"></div>
+                <span>T-tubule</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #805ad5, #9f7aea);"></div>
+                <span>Sarcoplasmic Reticulum</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #ed8936, #dd6b20);"></div>
+                <span>L-type Ca²⁺ (DHPR)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #38a169, #2f855a);"></div>
+                <span>T-type Ca²⁺</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #319795, #2c7a7b);"></div>
+                <span>SOCC</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #e53e3e, #c53030);"></div>
+                <span>RyR</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #9f7aea, #805ad5);"></div>
+                <span>IP₃R</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: radial-gradient(circle, #ffd700, #f6e05e);"></div>
+                <span>Ca²⁺ ions</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        
+        function updateStepIndicator(step, description) {
+            document.getElementById('stepNumber').textContent = `Step ${step}`;
+            document.getElementById('stepDescription').textContent = description;
+            currentStep = step;
+        }
+        
+        function updateVoltage(voltage, percentage) {
+            document.getElementById('voltageValue').textContent = `막전위: ${voltage} mV`;
+            document.getElementById('voltageFill').style.width = percentage + '%';
+        }
+        
+        function resetAllAnimations() {
+            // 모든 애니메이션 클래스 제거
+            const elements = document.querySelectorAll('.ltype-active, .ttype-active, .socc-active, .ryr-active, .ip3r-active, .floating, .retracting');
+            elements.forEach(el => {
+                el.classList.remove('ltype-active', 'ttype-active', 'socc-active', 'ryr-active', 'ip3r-active', 'floating', 'retracting');
+            });
+            
+            // 방출된 Ca2+ 이온 숨김
+            for (let i = 1; i <= 15; i++) {
+                const caRel = document.getElementById(`ca-rel-${i}`);
+                if (caRel) caRel.style.opacity = '0';
+            }
+            
+            // 활동전위 숨김
+            document.getElementById('actionPotential').style.opacity = '0';
+        }
+        
+        function step1() {
+            resetAllAnimations();
+            updateStepIndicator(1, '휴식 상태 - 다양한 Ca²⁺ 채널들');
+            updateVoltage(-70, 20);
+            
+            document.getElementById('statusTitle').textContent = 'Step 1: 휴식 상태 (Resting State)';
+            document.getElementById('statusDescription').textContent = 
+                '다양한 종류의 Ca²⁺ 채널들이 휴식 상태입니다. L-type(주황색), T-type(녹색), SOCC(청록색), RyR(빨강), IP₃R(보라) 채널들이 모두 준비되어 있습니다.';
+        }
+        
+        function step2() {
+            resetAllAnimations();
+            updateStepIndicator(2, '활동전위가 T-tubule을 통해 전파');
+            updateVoltage(+30, 80);
+            
+            document.getElementById('statusTitle').textContent = 'Step 2: 활동전위 전파 (Action Potential Propagation)';
+            document.getElementById('statusDescription').textContent = 
+                '근섬유 표면의 활동전위가 T-tubule을 통해 전파됩니다. 이때 다양한 전압 의존성 Ca²⁺ 채널들이 활성화 준비를 합니다.';
+            
+            // 활동전위 전파 애니메이션
+            const ap = document.getElementById('actionPotential');
+            ap.style.opacity = '1';
+            ap.style.animation = 'propagate 3s ease-out';
+            
+            // T-type 채널 약간 활성화 (낮은 역치)
+            setTimeout(() => {
+                for (let i = 1; i <= 6; i++) {
+                    setTimeout(() => {
+                        const ttype = document.getElementById(`ttype${i}`);
+                        ttype.classList.add('ttype-active');
+                    }, i * 100);
+                }
+            }, 1000);
+        }
+        
+        function step3() {
+            resetAllAnimations();
+            updateStepIndicator(3, 'L-type Ca²⁺ 채널 (DHPR) 활성화');
+            updateVoltage(+30, 80);
+            
+            document.getElementById('statusTitle').textContent = 'Step 3: L-type 채널 활성화 (L-type Channel Activation)';
+            document.getElementById('statusDescription').textContent = 
+                '높은 막전위에 의해 L-type Ca²⁺ 채널(DHPR)이 활성화됩니다. 이들은 voltage sensor로 작용하며 RyR과 직접적으로 연결되어 있습니다.';
+            
+            // T-type 먼저 활성화 (낮은 역치)
+            for (let i = 1; i <= 6; i++) {
+                const ttype = document.getElementById(`ttype${i}`);
+                ttype.classList.add('ttype-active');
+            }
+            
+            // L-type 활성화 (높은 역치)
+            setTimeout(() => {
+                for (let i = 1; i <= 7; i++) {
+                    setTimeout(() => {
+                        const ltype = document.getElementById(`ltype${i}`);
+                        ltype.classList.add('ltype-active');
+                    }, i * 150);
+                }
+            }, 500);
+        }
+        
+        function step4() {
+            resetAllAnimations();
+            updateStepIndicator(4, 'RyR 개방과 채널 상호작용');
+            updateVoltage(+30, 80);
+            
+            document.getElementById('statusTitle').textContent = 'Step 4: RyR 개방 (RyR Opening & Channel Interactions)';
+            document.getElementById('statusDescription').textContent = 
+                'L-type 채널의 구조 변화가 RyR을 기계적으로 활성화시킵니다. 동시에 다른 Ca²⁺ 채널들도 협력적으로 작용합니다.';
+            
+            // 모든 전압 의존성 채널 활성화
+            for (let i = 1; i <= 6; i++) {
+                const ttype = document.getElementById(`ttype${i}`);
+                ttype.classList.add('ttype-active');
+            }
+            
+            for (let i = 1; i <= 7; i++) {
+                const ltype = document.getElementById(`ltype${i}`);
+                ltype.classList.add('ltype-active');
+            }
+            
+            // RyR 활성화
+            setTimeout(() => {
+                for (let i = 1; i <= 10; i++) {
+                    setTimeout(() => {
+                        const ryr = document.getElementById(`ryr${i}`);
+                        ryr.classList.add('ryr-active');
+                    }, i * 100);
+                }
+            }, 500);
+            
+            // IP3R 보조적 활성화
+            setTimeout(() => {
+                for (let i = 1; i <= 4; i++) {
+                    const ip3r = document.getElementById(`ip3r${i}`);
+                    ip3r.classList.add('ip3r-active');
+                }
+            }, 1000);
+        }
+        
+        function step5() {
+            resetAllAnimations();
+            updateStepIndicator(5, '협력적 Ca²⁺ 방출');
+            updateVoltage(+30, 80);
+            
+            document.getElementById('statusTitle').textContent = 'Step 5: 협력적 Ca²⁺ 방출 (Cooperative Calcium Release)';
+            document.getElementById('statusDescription').textContent = 
+                '다양한 Ca²⁺ 채널들이 협력하여 Ca²⁺를 방출합니다. RyR에서 주요 방출, 다른 채널들은 보조적 역할을 담당합니다.';
+            
+            // 모든 채널 활성 유지
+            for (let i = 1; i <= 6; i++) {
+                const ttype = document.getElementById(`ttype${i}`);
+                ttype.classList.add('ttype-active');
+            }
+            
+            for (let i = 1; i <= 7; i++) {
+                const ltype = document.getElementById(`ltype${i}`);
+                ltype.classList.add('ltype-active');
+            }
+            
+            for (let i = 1; i <= 10; i++) {
+                const ryr = document.getElementById(`ryr${i}`);
+                ryr.classList.add('ryr-active');
+            }
+            
+            for (let i = 1; i <= 4; i++) {
+                const ip3r = document.getElementById(`ip3r${i}`);
+                ip3r.classList.add('ip3r-active');
+            }
+            
+            // Ca2+ 방출 애니메이션
+            setTimeout(() => {
+                for (let i = 1; i <= 15; i++) {
+                    setTimeout(() => {
+                        const caRel = document.getElementById(`ca-rel-${i}`);
+                        caRel.style.opacity = '1';
+                        caRel.classList.add('floating');
+                    }, i * 80);
+                }
+            }, 800);
+        }
+        
+        function step6() {
+            resetAllAnimations();
+            updateStepIndicator(6, 'Ca²⁺ 재흡수와 SOCC 활성화');
+            updateVoltage(-70, 20);
+            
+            document.getElementById('statusTitle').textContent = 'Step 6: Ca²⁺ 재흡수 (Calcium Reuptake & SOCC Activation)';
+            document.getElementById('statusDescription').textContent = 
+                'SERCA pump가 Ca²⁺를 재흡수하고, SR Ca²⁺ 감소로 SOCC가 활성화되어 세포외 Ca²⁺를 유입시켜 항상성을 유지합니다.';
+            
+            // 방출된 Ca2+ 표시
+            for (let i = 1; i <= 15; i++) {
+                const caRel = document.getElementById(`ca-rel-${i}`);
+                caRel.style.opacity = '1';
+            }
+            
+            // SOCC 활성화 (Store depletion 감지)
+            setTimeout(() => {
+                for (let i = 1; i <= 4; i++) {
+                    setTimeout(() => {
+                        const socc = document.getElementById(`socc${i}`);
+                        socc.classList.add('socc-active');
+                    }, i * 200);
+                }
+            }, 500);
+            
+            // Ca2+ 재흡수 애니메이션
+            setTimeout(() => {
+                for (let i = 1; i <= 15; i++) {
+                    setTimeout(() => {
+                        const caRel = document.getElementById(`ca-rel-${i}`);
+                        caRel.classList.add('retracting');
+                        setTimeout(() => {
+                            caRel.style.opacity = '0';
+                        }, 2000);
+                    }, i * 100);
+                }
+            }, 1000);
+        }
+        
+        function showChannelComparison() {
+            document.getElementById('channelComparison').style.display = 'block';
+        }
+        
+        function hideChannelComparison() {
+            document.getElementById('channelComparison').style.display = 'none';
+        }
+        
+        function resetSimulation() {
+            resetAllAnimations();
+            hideChannelComparison();
+            step1();
+        }
+        
+        // 자동 재생 기능
+        function autoPlay() {
+            let step = 1;
+            const interval = setInterval(() => {
+                switch(step) {
+                    case 1: step1(); break;
+                    case 2: step2(); break;
+                    case 3: step3(); break;
+                    case 4: step4(); break;
+                    case 5: step5(); break;
+                    case 6: step6(); break;
+                    default:
+                        clearInterval(interval);
+                        setTimeout(() => autoPlay(), 2000);
+                        return;
+                }
+                step++;
+                if (step > 6) {
+                    clearInterval(interval);
+                    setTimeout(() => autoPlay(), 3000);
+                }
+            }, 4000);
+        }
+        
+        // 초기화 및 이벤트 리스너
+        document.addEventListener('DOMContentLoaded', function() {
+            step1();
+            
+            // 키보드 단축키
+            document.addEventListener('keydown', function(e) {
+                switch(e.key) {
+                    case '1': step1(); break;
+                    case '2': step2(); break;
+                    case '3': step3(); break;
+                    case '4': step4(); break;
+                    case '5': step5(); break;
+                    case '6': step6(); break;
+                    case 'c': case 'C': showChannelComparison(); break;
+                    case 'r': case 'R': resetSimulation(); break;
+                    case 'Escape': hideChannelComparison(); break;
+                    case ' ': 
+                        e.preventDefault();
+                        autoPlay(); 
+                        break;
+                }
+            });
+            
+            // 채널들에 호버 효과 및 정보 표시
+            const channelTypes = ['ltype', 'ttype', 'socc', 'ryr', 'ip3r'];
+            const channelCounts = [7, 6, 4, 10, 4];
+            
+            channelTypes.forEach((type, typeIndex) => {
+                for (let i = 1; i <= channelCounts[typeIndex]; i++) {
+                    const channel = document.getElementById(`${type}${i}`);
+                    if (channel) {
+                        channel.addEventListener('mouseenter', function() {
+                            this.style.transform = 'scale(1.3)';
+                            this.style.zIndex = '10';
+                        });
+                        channel.addEventListener('mouseleave', function() {
+                            this.style.transform = 'scale(1)';
+                            this.style.zIndex = '5';
+                        });
+                    }
+                }
+            });
+            
+            console.log('Ca²⁺ Channels & Excitation-Contraction Coupling 시뮬레이션이 준비되었습니다!');
+            console.log('키보드 단축키: 1-6 (각 단계), C (채널 비교), L (L vs T 구조), R (리셋), ESC (비교창 닫기), Space (자동재생)');
+        });
+    </script>
+</body>
+</html>
