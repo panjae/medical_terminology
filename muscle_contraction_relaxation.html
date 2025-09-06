@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골격근 흥분-수축 연결 및 이완 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            min-width: 140px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        .btn-phase1 { background: linear-gradient(135deg, #64748b, #475569); }
+        .btn-phase2 { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+        .btn-phase3 { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+        .btn-phase4 { background: linear-gradient(135deg, #059669, #047857); }
+        .btn-phase5 { background: linear-gradient(135deg, #ea580c, #c2410c); }
+        .btn-relaxation { background: linear-gradient(135deg, #1e40af, #1d4ed8); }
+        .btn-auto { background: linear-gradient(135deg, #0891b2, #0e7490); }
+        .btn-reset { background: linear-gradient(135deg, #374151, #1f2937); }
+        
+        .simulation-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .main-simulation {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 30px;
+            border: 2px solid #e2e8f0;
+            position: relative;
+            min-height: 600px;
+        }
+        
+        .info-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .phase-indicator {
+            background: #1e40af;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .phase-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .phase-description {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .ca-levels {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1e40af;
+        }
+        
+        .ca-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+        
+        .ca-bar-container {
+            background: #e2e8f0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .ca-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+            transition: width 1s ease;
+            border-radius: 10px;
+        }
+        
+        .ca-concentration {
+            font-size: 0.85em;
+            color: #64748b;
+            text-align: center;
+        }
+        
+        /* 근섬유 구조 */
+        .muscle-fiber-structure {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin: 20px 0;
+        }
+        
+        /* 액틴 필라멘트 */
+        .actin-filament {
+            position: absolute;
+            top: 200px;
+            left: 50px;
+            width: 500px;
+            height: 12px;
+            background: linear-gradient(90deg, #1e40af, #3b82f6, #1e40af);
+            border-radius: 6px;
+            z-index: 2;
+        }
+        
+        /* 미오신 필라멘트 */
+        .myosin-filament {
+            position: absolute;
+            top: 260px;
+            left: 70px;
+            width: 460px;
+            height: 16px;
+            background: linear-gradient(90deg, #64748b, #94a3b8, #64748b);
+            border-radius: 8px;
+            z-index: 2;
+        }
+        
+        /* 미오신 머리들 */
+        .myosin-head {
+            position: absolute;
+            width: 18px;
+            height: 25px;
+            background: #475569;
+            border-radius: 9px 9px 3px 3px;
+            z-index: 3;
+            transition: all 1s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .head1 { top: 235px; left: 120px; }
+        .head2 { top: 235px; left: 180px; }
+        .head3 { top: 235px; left: 240px; }
+        .head4 { top: 235px; left: 300px; }
+        .head5 { top: 235px; left: 360px; }
+        .head6 { top: 235px; left: 420px; }
+        
+        /* ATP/ADP 분자들 */
+        .molecule {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            z-index: 4;
+            opacity: 0;
+            transition: all 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .atp { background: radial-gradient(circle, #dc2626, #b91c1c); }
+        .adp { background: radial-gradient(circle, #ea580c, #c2410c); }
+        
+        /* Ca2+ 이온들 */
+        .calcium-ion {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #fbbf24, #f59e0b);
+            border-radius: 50%;
+            z-index: 5;
+            opacity: 0;
+            transition: all 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px;
+            color: #1e293b;
+            font-weight: bold;
+            box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+        }
+        
+        /* 트로포닌-트로포미오신 복합체 */
+        .troponin-complex {
+            position: absolute;
+            top: 185px;
+            width: 20px;
+            height: 20px;
+            z-index: 3;
+            transition: all 1s ease;
+        }
+        
+        .tnc-ca {
+            width: 8px;
+            height: 8px;
+            background: #fbbf24;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 6px;
+            opacity: 0;
+            transition: all 1s ease;
+        }
+        
+        .troponin1 { left: 140px; }
+        .troponin2 { left: 200px; }
+        .troponin3 { left: 260px; }
+        .troponin4 { left: 320px; }
+        .troponin5 { left: 380px; }
+        .troponin6 { left: 440px; }
+        
+        /* 근소포체 */
+        .sarcoplasmic-reticulum {
+            position: absolute;
+            top: 100px;
+            left: 40px;
+            width: 520px;
+            height: 60px;
+            background: rgba(126, 58, 237, 0.1);
+            border: 2px dashed #7c3aed;
+            border-radius: 12px;
+            z-index: 1;
+        }
+        
+        .sr-label {
+            position: absolute;
+            top: 105px;
+            left: 50px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #7c3aed;
+        }
+        
+        /* Ca2+ 펌프들 */
+        .ca-pump {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            border-radius: 3px;
+            z-index: 2;
+            transition: all 1s ease;
+        }
+        
+        .pump1 { top: 170px; left: 100px; }
+        .pump2 { top: 170px; left: 160px; }
+        .pump3 { top: 170px; left: 220px; }
+        .pump4 { top: 170px; left: 280px; }
+        .pump5 { top: 170px; left: 340px; }
+        .pump6 { top: 170px; left: 400px; }
+        
+        /* 크로스브리지 연결선 */
+        .crossbridge-line {
+            position: absolute;
+            width: 2px;
+            background: #059669;
+            z-index: 1;
+            opacity: 0;
+            transition: all 1s ease;
+            transform-origin: top;
+        }
+        
+        /* 애니메이션 클래스들 */
+        .binding {
+            animation: binding 2s ease-in-out infinite;
+        }
+        
+        .pumping {
+            animation: pumping 1.5s ease-in-out infinite;
+        }
+        
+        .sliding {
+            animation: sliding 2s ease-in-out;
+        }
+        
+        .ca-bound {
+            opacity: 1 !important;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes binding {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(15deg); }
+        }
+        
+        @keyframes pumping {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        
+        @keyframes sliding {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(10px); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); }
+            50% { box-shadow: 0 0 16px rgba(251, 191, 36, 0.8); }
+        }
+        
+        .phase-details {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #1e40af;
+        }
+        
+        .detail-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .detail-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .detail-list li {
+            padding: 4px 0;
+            font-size: 0.9em;
+            line-height: 1.4;
+            color: #475569;
+        }
+        
+        .detail-list li:before {
+            content: "▸ ";
+            color: #1e40af;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .sequence-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid #e2e8f0;
+        }
+        
+        .sequence-step {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+        
+        .sequence-description {
+            font-size: 0.85em;
+            color: #64748b;
+            line-height: 1.3;
+        }
+        
+        /* 반응형 디자인 */
+        @media (max-width: 1200px) {
+            .simulation-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .muscle-fiber-structure {
+                transform: scale(0.8);
+                margin: 0 auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                min-width: 200px;
+            }
+            
+            .muscle-fiber-structure {
+                transform: scale(0.6);
+                margin: -50px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 골격근 흥분-수축 연결 및 이완 시뮬레이션</h1>
+            <p>Skeletal Muscle Excitation-Contraction Coupling & Relaxation</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-phase1" onclick="showPhase1()">1️⃣ 결합부위 노출</button>
+            <button class="btn btn-phase2" onclick="showPhase2()">2️⃣ ATP 결합</button>
+            <button class="btn btn-phase3" onclick="showPhase3()">3️⃣ ATP 가수분해</button>
+            <button class="btn btn-phase4" onclick="showPhase4()">4️⃣ 크로스브리지 형성</button>
+            <button class="btn btn-phase5" onclick="showPhase5()">5️⃣ 파워 스트로크</button>
+            <button class="btn btn-relaxation" onclick="showRelaxation()">🔄 근육 이완</button>
+            <button class="btn btn-auto" onclick="toggleAutoMode()">⚡ 자동 재생</button>
+            <button class="btn btn-reset" onclick="resetSimulation()">↺ 초기화</button>
+        </div>
+
+        <div class="simulation-container">
+            <div class="main-simulation">
+                <div class="sequence-indicator">
+                    <div class="sequence-step" id="sequenceStep">Step 1</div>
+                    <div class="sequence-description" id="sequenceDescription">미오신 결합부위가 노출된 상태</div>
+                </div>
+
+                <div class="muscle-fiber-structure">
+                    <!-- 근소포체 -->
+                    <div class="sarcoplasmic-reticulum"></div>
+                    <div class="sr-label">Sarcoplasmic Reticulum</div>
+                    
+                    <!-- Ca2+ 펌프들 -->
+                    <div class="ca-pump pump1" id="pump1"></div>
+                    <div class="ca-pump pump2" id="pump2"></div>
+                    <div class="ca-pump pump3" id="pump3"></div>
+                    <div class="ca-pump pump4" id="pump4"></div>
+                    <div class="ca-pump pump5" id="pump5"></div>
+                    <div class="ca-pump pump6" id="pump6"></div>
+                    
+                    <!-- 액틴 필라멘트 -->
+                    <div class="actin-filament" id="actinFilament"></div>
+                    
+                    <!-- 트로포닌 복합체들 -->
+                    <div class="troponin-complex troponin1">
+                        <div class="tnc-ca" id="tnc1"></div>
+                    </div>
+                    <div class="troponin-complex troponin2">
+                        <div class="tnc-ca" id="tnc2"></div>
+                    </div>
+                    <div class="troponin-complex troponin3">
+                        <div class="tnc-ca" id="tnc3"></div>
+                    </div>
+                    <div class="troponin-complex troponin4">
+                        <div class="tnc-ca" id="tnc4"></div>
+                    </div>
+                    <div class="troponin-complex troponin5">
+                        <div class="tnc-ca" id="tnc5"></div>
+                    </div>
+                    <div class="troponin-complex troponin6">
+                        <div class="tnc-ca" id="tnc6"></div>
+                    </div>
+                    
+                    <!-- 미오신 필라멘트 -->
+                    <div class="myosin-filament"></div>
+                    
+                    <!-- 미오신 머리들 -->
+                    <div class="myosin-head head1" id="head1"></div>
+                    <div class="myosin-head head2" id="head2"></div>
+                    <div class="myosin-head head3" id="head3"></div>
+                    <div class="myosin-head head4" id="head4"></div>
+                    <div class="myosin-head head5" id="head5"></div>
+                    <div class="myosin-head head6" id="head6"></div>
+                    
+                    <!-- ATP 분자들 -->
+                    <div class="molecule atp" id="atp1" style="top: 210px; left: 130px;">ATP</div>
+                    <div class="molecule atp" id="atp2" style="top: 210px; left: 190px;">ATP</div>
+                    <div class="molecule atp" id="atp3" style="top: 210px; left: 250px;">ATP</div>
+                    <div class="molecule atp" id="atp4" style="top: 210px; left: 310px;">ATP</div>
+                    <div class="molecule atp" id="atp5" style="top: 210px; left: 370px;">ATP</div>
+                    <div class="molecule atp" id="atp6" style="top: 210px; left: 430px;">ATP</div>
+                    
+                    <!-- ADP 분자들 -->
+                    <div class="molecule adp" id="adp1" style="top: 280px; left: 130px;">ADP</div>
+                    <div class="molecule adp" id="adp2" style="top: 280px; left: 190px;">ADP</div>
+                    <div class="molecule adp" id="adp3" style="top: 280px; left: 250px;">ADP</div>
+                    <div class="molecule adp" id="adp4" style="top: 280px; left: 310px;">ADP</div>
+                    <div class="molecule adp" id="adp5" style="top: 280px; left: 370px;">ADP</div>
+                    <div class="molecule adp" id="adp6" style="top: 280px; left: 430px;">ADP</div>
+                    
+                    <!-- Ca2+ 이온들 -->
+                    <div class="calcium-ion" id="ca1" style="top: 130px; left: 120px;">Ca</div>
+                    <div class="calcium-ion" id="ca2" style="top: 130px; left: 180px;">Ca</div>
+                    <div class="calcium-ion" id="ca3" style="top: 130px; left: 240px;">Ca</div>
+                    <div class="calcium-ion" id="ca4" style="top: 130px; left: 300px;">Ca</div>
+                    <div class="calcium-ion" id="ca5" style="top: 130px; left: 360px;">Ca</div>
+                    <div class="calcium-ion" id="ca6" style="top: 130px; left: 420px;">Ca</div>
+                    
+                    <!-- 크로스브리지 연결선들 -->
+                    <div class="crossbridge-line" id="bridge1" style="top: 212px; left: 129px; height: 23px;"></div>
+                    <div class="crossbridge-line" id="bridge2" style="top: 212px; left: 189px; height: 23px;"></div>
+                    <div class="crossbridge-line" id="bridge3" style="top: 212px; left: 249px; height: 23px;"></div>
+                    <div class="crossbridge-line" id="bridge4" style="top: 212px; left: 309px; height: 23px;"></div>
+                    <div class="crossbridge-line" id="bridge5" style="top: 212px; left: 369px; height: 23px;"></div>
+                    <div class="crossbridge-line" id="bridge6" style="top: 212px; left: 429px; height: 23px;"></div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="phase-indicator">
+                    <div class="phase-title" id="phaseTitle">Phase 1: 미오신 결합부위 노출</div>
+                    <div class="phase-description" id="phaseDescription">Ca²⁺가 트로포닌에 결합하여 미오신 결합부위가 노출됩니다</div>
+                </div>
+
+                <div class="ca-levels">
+                    <div class="ca-title">Ca²⁺ 농도</div>
+                    <div class="ca-bar-container">
+                        <div class="ca-bar" id="caBar" style="width: 80%;"></div>
+                    </div>
+                    <div class="ca-concentration" id="caConcentration">10⁻⁵ M (수축 상태)</div>
+                </div>
+
+                <div class="phase-details">
+                    <div class="detail-title">주요 과정</div>
+                    <ul class="detail-list" id="detailList">
+                        <li>Ca²⁺가 트로포닌 C에 결합</li>
+                        <li>트로포미오신의 위치 변화</li>
+                        <li>액틴의 미오신 결합부위 노출</li>
+                        <li>미오신 머리가 결합 준비 상태</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #1e40af, #3b82f6);"></div>
+                <span>액틴 필라멘트</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #64748b, #94a3b8);"></div>
+                <span>미오신 필라멘트</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #475569;"></div>
+                <span>미오신 머리</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: radial-gradient(circle, #dc2626, #b91c1c);"></div>
+                <span>ATP</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: radial-gradient(circle, #ea580c, #c2410c);"></div>
+                <span>ADP + Pi</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: radial-gradient(circle, #fbbf24, #f59e0b);"></div>
+                <span>Ca²⁺ 이온</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #7c3aed, #6d28d9);"></div>
+                <span>Ca²⁺ ATPase 펌프</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #059669;"></div>
+                <span>크로스브리지</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPhase = 1;
+        let isAutoMode = false;
+        let autoInterval;
+        
+        // 안전한 요소 접근 함수
+        function safeGetElement(id) {
+            const element = document.getElementById(id);
+            if (!element) {
+                console.warn(`Element with id '${id}' not found`);
+            }
+            return element;
+        }
+        
+        // 안전한 스타일 설정
+        function safeSetStyle(element, property, value) {
+            if (element) {
+                element.style[property] = value;
+            }
+        }
+        
+        // 안전한 클래스 조작
+        function safeAddClass(element, className) {
+            if (element) {
+                element.classList.add(className);
+            }
+        }
+        
+        function safeRemoveClass(element, className) {
+            if (element) {
+                element.classList.remove(className);
+            }
+        }
+        
+        function updateSequenceIndicator(step, description) {
+            const stepEl = safeGetElement('sequenceStep');
+            const descEl = safeGetElement('sequenceDescription');
+            if (stepEl) stepEl.textContent = `Step ${step}`;
+            if (descEl) descEl.textContent = description;
+        }
+        
+        function updatePhaseInfo(title, description, details, caLevel, caText) {
+            const titleEl = safeGetElement('phaseTitle');
+            const descEl = safeGetElement('phaseDescription');
+            const listEl = safeGetElement('detailList');
+            const barEl = safeGetElement('caBar');
+            const concentEl = safeGetElement('caConcentration');
+            
+            if (titleEl) titleEl.textContent = title;
+            if (descEl) descEl.textContent = description;
+            if (listEl) listEl.innerHTML = details.map(item => `<li>${item}</li>`).join('');
+            safeSetStyle(barEl, 'width', caLevel + '%');
+            if (concentEl) concentEl.textContent = caText;
+        }
+        
+        function resetAllStates() {
+            // 모든 애니메이션 클래스 제거
+            document.querySelectorAll('.binding, .pumping, .sliding, .ca-bound').forEach(el => {
+                el.classList.remove('binding', 'pumping', 'sliding', 'ca-bound');
+            });
+            
+            // 모든 분자들 숨기기
+            for (let i = 1; i <= 6; i++) {
+                const atp = safeGetElement(`atp${i}`);
+                const adp = safeGetElement(`adp${i}`);
+                const ca = safeGetElement(`ca${i}`);
+                const tnc = safeGetElement(`tnc${i}`);
+                const bridge = safeGetElement(`bridge${i}`);
+                const head = safeGetElement(`head${i}`);
+                const pump = safeGetElement(`pump${i}`);
+                
+                safeSetStyle(atp, 'opacity', '0');
+                safeSetStyle(adp, 'opacity', '0');
+                safeSetStyle(ca, 'opacity', '0');
+                safeSetStyle(tnc, 'opacity', '0');
+                safeSetStyle(bridge, 'opacity', '0');
+                safeSetStyle(head, 'transform', 'none');
+                safeRemoveClass(pump, 'pumping');
+            }
+            
+            // 액틴 필라멘트 초기화
+            const actinFilament = safeGetElement('actinFilament');
+            safeRemoveClass(actinFilament, 'sliding');
+        }
+        
+        function showPhase1() {
+            resetAllStates();
+            currentPhase = 1;
+            
+            updateSequenceIndicator(1, '미오신 결합부위가 노출되고 머리가 결합 상태');
+            updatePhaseInfo(
+                'Phase 1: 미오신 결합부위 노출',
+                'Ca²⁺가 트로포닌 C에 결합하여 미오신 결합부위가 노출됩니다',
+                [
+                    'Ca²⁺가 근소포체에서 방출됨',
+                    '트로포닌 C에 Ca²⁺ 결합',
+                    '트로포미오신 복합체의 구조 변화',
+                    '액틴의 미오신 결합부위 노출',
+                    '미오신 머리가 액틴에 결합'
+                ],
+                80,
+                '10⁻⁵ M (수축 상태)'
+            );
+            
+            // Ca2+ 이온들 표시
+            for (let i = 1; i <= 6; i++) {
+                setTimeout(() => {
+                    const ca = safeGetElement(`ca${i}`);
+                    const tnc = safeGetElement(`tnc${i}`);
+                    safeSetStyle(ca, 'opacity', '1');
+                    safeAddClass(ca, 'ca-bound');
+                    safeSetStyle(tnc, 'opacity', '1');
+                    safeAddClass(tnc, 'ca-bound');
+                }, i * 100);
+            }
+            
+            // 크로스브리지 연결 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 6; i++) {
+                    setTimeout(() => {
+                        const bridge = safeGetElement(`bridge${i}`);
+                        safeSetStyle(bridge, 'opacity', '1');
+                    }, i * 100);
+                }
+            }, 1000);
+        }
+        
+        function showPhase2() {
+            resetAllStates();
+            currentPhase = 2;
+            
+            updateSequenceIndicator(2, 'ATP가 머리에 결합하여 필라멘트를 방출');
+            updatePhaseInfo(
+                'Phase 2: ATP 결합',
+                'ATP가 미오신 머리에 결합하여 액틴으로부터 분리됩니다',
+                [
+                    'ATP가 미오신 머리에 결합',
+                    '미오신 머리의 구조 변화',
+                    '액틴-미오신 결합 해제',
+                    '크로스브리지 연결 끊어짐',
+                    '근육 이완을 위한 준비'
+                ],
+                75,
+                '10⁻⁵ M (수축 상태)'
+            );
+            
+            // Ca2+ 유지
+            for (let i = 1; i <= 6; i++) {
+                const ca = safeGetElement(`ca${i}`);
+                const tnc = safeGetElement(`tnc${i}`);
+                safeSetStyle(ca, 'opacity', '1');
+                safeSetStyle(tnc, 'opacity', '1');
+            }
+            
+            // ATP 결합
+            for (let i = 1; i <= 6; i++) {
+                setTimeout(() => {
+                    const atp = safeGetElement(`atp${i}`);
+                    const head = safeGetElement(`head${i}`);
+                    safeSetStyle(atp, 'opacity', '1');
+                    safeAddClass(head, 'binding');
+                }, i * 150);
+            }
+        }
+        
+        function showPhase3() {
+            resetAllStates();
+            currentPhase = 3;
+            
+            updateSequenceIndicator(3, 'ATP 가수분해로 미오신 머리가 전진');
+            updatePhaseInfo(
+                'Phase 3: ATP 가수분해',
+                'ATP가 ADP + Pi로 분해되면서 미오신 머리가 필라멘트를 따라 전진합니다',
+                [
+                    'ATP → ADP + Pi 가수분해',
+                    '미오신 머리의 에너지 충전',
+                    '필라멘트를 따라 위치 이동',
+                    '다음 결합 위치로 전진',
+                    '파워 스트로크 준비'
+                ],
+                75,
+                '10⁻⁵ M (수축 상태)'
+            );
+            
+            // Ca2+ 유지
+            for (let i = 1; i <= 6; i++) {
+                const ca = safeGetElement(`ca${i}`);
+                const tnc = safeGetElement(`tnc${i}`);
+                safeSetStyle(ca, 'opacity', '1');
+                safeSetStyle(tnc, 'opacity', '1');
+            }
+            
+            // ATP에서 ADP로 전환
+            for (let i = 1; i <= 6; i++) {
+                setTimeout(() => {
+                    const atp = safeGetElement(`atp${i}`);
+                    const adp = safeGetElement(`adp${i}`);
+                    const head = safeGetElement(`head${i}`);
+                    safeSetStyle(atp, 'opacity', '0');
+                    safeSetStyle(adp, 'opacity', '1');
+                    safeSetStyle(head, 'transform', 'translateX(10px) rotate(-15deg)');
+                }, i * 150);
+            }
+        }
+        
+        function showPhase4() {
+            resetAllStates();
+            currentPhase = 4;
+            
+            updateSequenceIndicator(4, '새로운 위치에서 액틴-미오신 크로스브리지 형성');
+            updatePhaseInfo(
+                'Phase 4: 크로스브리지 형성',
+                '미오신 머리가 액틴의 새로운 위치에서 크로스브리지를 형성합니다',
+                [
+                    '미오신 머리가 새 위치에 도달',
+                    '액틴과 미오신 재결합',
+                    '크로스브리지 형성',
+                    'ADP + Pi가 아직 결합된 상태',
+                    '파워 스트로크 직전 상태'
+                ],
+                70,
+                '10⁻⁵ M (수축 상태)'
+            );
+            
+            // Ca2+ 유지
+            for (let i = 1; i <= 6; i++) {
+                const ca = safeGetElement(`ca${i}`);
+                const tnc = safeGetElement(`tnc${i}`);
+                safeSetStyle(ca, 'opacity', '1');
+                safeSetStyle(tnc, 'opacity', '1');
+            }
+            
+            // ADP 상태 유지하며 크로스브리지 형성
+            for (let i = 1; i <= 6; i++) {
+                setTimeout(() => {
+                    const adp = safeGetElement(`adp${i}`);
+                    const bridge = safeGetElement(`bridge${i}`);
+                    const head = safeGetElement(`head${i}`);
+                    safeSetStyle(adp, 'opacity', '1');
+                    safeSetStyle(bridge, 'opacity', '1');
+                    safeSetStyle(head, 'transform', 'translateX(10px)');
+                }, i * 150);
+            }
+        }
+        
+        function showPhase5() {
+            resetAllStates();
+            currentPhase = 5;
+            
+            updateSequenceIndicator(5, '머리가 재배치되어 액틴을 10nm 당김');
+            updatePhaseInfo(
+                'Phase 5: 파워 스트로크',
+                '미오신 머리가 재배치되며 액틴을 약 10nm 당겨서 수축을 일으킵니다',
+                [
+                    'ADP + Pi 방출',
+                    '미오신 머리의 파워 스트로크',
+                    '액틴 필라멘트 당김 (~10nm)',
+                    '근육 수축력 발생',
+                    '수축 사이클 완료'
+                ],
+                65,
+                '10⁻⁵ M (수축 상태)'
+            );
+            
+            // Ca2+ 유지
+            for (let i = 1; i <= 6; i++) {
+                const ca = safeGetElement(`ca${i}`);
+                const tnc = safeGetElement(`tnc${i}`);
+                safeSetStyle(ca, 'opacity', '1');
+                safeSetStyle(tnc, 'opacity', '1');
+            }
+            
+            // 파워 스트로크 및 필라멘트 슬라이딩
+            for (let i = 1; i <= 6; i++) {
+                setTimeout(() => {
+                    const bridge = safeGetElement(`bridge${i}`);
+                    const head = safeGetElement(`head${i}`);
+                    const adp = safeGetElement(`adp${i}`);
+                    
+                    safeSetStyle(bridge, 'opacity', '1');
+                    safeAddClass(bridge, 'binding');
+                    safeSetStyle(head, 'transform', 'rotate(45deg)');
+                    safeSetStyle(adp, 'opacity', '0');
+                }, i * 150);
+            }
+            
+            // 필라멘트 슬라이딩 효과
+            setTimeout(() => {
+                const actinFilament = safeGetElement('actinFilament');
+                safeAddClass(actinFilament, 'sliding');
+            }, 1000);
+        }
+        
+        function showRelaxation() {
+            resetAllStates();
+            currentPhase = 6;
+            
+            updateSequenceIndicator('R', '근육 이완: Ca²⁺ 재흡수 및 크로스브리지 해제');
+            updatePhaseInfo(
+                'Relaxation: 근육 이완',
+                'α-motor neuron이 신호를 중단하면 Ca²⁺가 재흡수되어 근육이 이완됩니다',
+                [
+                    'α-motor neuron 신호 중단',
+                    'Ca²⁺ channels 및 release channels 폐쇄',
+                    'Ca²⁺ ATPases 활성화',
+                    'SR로 Ca²⁺ 빠른 재흡수',
+                    'TnC에서 Ca²⁺ 해리',
+                    '트로포미오신이 결합부위 차단',
+                    '크로스브리지 사이클 중단'
+                ],
+                15,
+                '10⁻⁷ M (휴식 상태)'
+            );
+            
+            // Ca2+ 펌프 활성화
+            for (let i = 1; i <= 6; i++) {
+                const pump = safeGetElement(`pump${i}`);
+                safeAddClass(pump, 'pumping');
+            }
+            
+            // Ca2+ 점진적 제거
+            for (let i = 1; i <= 6; i++) {
+                setTimeout(() => {
+                    const ca = safeGetElement(`ca${i}`);
+                    const tnc = safeGetElement(`tnc${i}`);
+                    const bridge = safeGetElement(`bridge${i}`);
+                    
+                    safeSetStyle(ca, 'opacity', '0.3');
+                    safeSetStyle(tnc, 'opacity', '0');
+                    safeSetStyle(bridge, 'opacity', '0');
+                }, i * 200);
+            }
+            
+            // 완전한 이완 상태
+            setTimeout(() => {
+                for (let i = 1; i <= 6; i++) {
+                    const ca = safeGetElement(`ca${i}`);
+                    const head = safeGetElement(`head${i}`);
+                    
+                    safeSetStyle(ca, 'opacity', '0');
+                    safeSetStyle(head, 'transform', 'none');
+                }
+                const actinFilament = safeGetElement('actinFilament');
+                safeRemoveClass(actinFilament, 'sliding');
+            }, 2000);
+        }
+        
+        function toggleAutoMode() {
+            const btn = document.querySelector('.btn-auto');
+            if (!btn) return;
+            
+            if (isAutoMode) {
+                isAutoMode = false;
+                clearInterval(autoInterval);
+                btn.textContent = '⚡ 자동 재생';
+                btn.style.background = 'linear-gradient(135deg, #0891b2, #0e7490)';
+            } else {
+                isAutoMode = true;
+                btn.textContent = '⏸️ 재생 중지';
+                btn.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)';
+                
+                let phase = 1;
+                autoInterval = setInterval(() => {
+                    switch(phase) {
+                        case 1: showPhase1(); break;
+                        case 2: showPhase2(); break;
+                        case 3: showPhase3(); break;
+                        case 4: showPhase4(); break;
+                        case 5: showPhase5(); break;
+                        case 6: showRelaxation(); break;
+                        default: phase = 0; break;
+                    }
+                    phase++;
+                    if (phase > 6) phase = 1;
+                }, 3500);
+            }
+        }
+        
+        function resetSimulation() {
+            if (isAutoMode) {
+                toggleAutoMode();
+            }
+            resetAllStates();
+            showPhase1();
+        }
+        
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            showPhase1();
+            
+            // 키보드 단축키
+            document.addEventListener('keydown', function(e) {
+                if (e.key >= '1' && e.key <= '5') {
+                    const phase = parseInt(e.key);
+                    switch(phase) {
+                        case 1: showPhase1(); break;
+                        case 2: showPhase2(); break;
+                        case 3: showPhase3(); break;
+                        case 4: showPhase4(); break;
+                        case 5: showPhase5(); break;
+                    }
+                } else if (e.key === '6' || e.key.toLowerCase() === 'r') {
+                    showRelaxation();
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleAutoMode();
+                } else if (e.key === 'Escape') {
+                    resetSimulation();
+                }
+            });
+            
+            console.log('골격근 흥분-수축 연결 시뮬레이션이 준비되었습니다!');
+            console.log('키보드 단축키: 1-5 (각 단계), 6/R (이완), Space (자동재생), Esc (리셋)');
+        });
+    </script>
+</body>
+</html>
