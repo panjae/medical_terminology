@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골격근 자극 빈도 및 수축 메커니즘 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.8em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.3em;
+            color: #7f8c8d;
+            font-weight: 300;
+        }
+        
+        .controls-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .control-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 200px;
+        }
+        
+        .slider-label {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .frequency-slider {
+            width: 200px;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+        
+        .frequency-slider:hover {
+            opacity: 1;
+        }
+        
+        .frequency-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2c3e50;
+            cursor: pointer;
+        }
+        
+        .frequency-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2c3e50;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .frequency-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            min-width: 120px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-twitch { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
+        .btn-summation { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .btn-tetanus { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .btn-start { background: linear-gradient(135deg, #27ae60, #229954); }
+        .btn-stop { background: linear-gradient(135deg, #e67e22, #d35400); }
+        .btn-reset { background: linear-gradient(135deg, #34495e, #2c3e50); }
+        
+        .simulation-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .graph-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .graph-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .graph {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #34495e;
+            border-radius: 10px;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .muscle-visual {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .muscle-fiber {
+            width: 100%;
+            max-width: 300px;
+            height: 60px;
+            background: linear-gradient(90deg, #27ae60, #2ecc71, #27ae60);
+            border-radius: 30px;
+            position: relative;
+            margin: 20px 0;
+            transition: all 0.5s ease;
+            border: 3px solid #229954;
+        }
+        
+        .sarcomere {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            width: 80%;
+            height: 30px;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .z-line {
+            width: 3px;
+            height: 100%;
+            background: #34495e;
+            border-radius: 2px;
+        }
+        
+        .actin-myosin {
+            flex: 1;
+            height: 15px;
+            background: linear-gradient(90deg, #f39c12, #e67e22, #f39c12);
+            margin: 0 5px;
+            border-radius: 8px;
+            transition: all 0.5s ease;
+        }
+        
+        .ca-indicator {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .ca-level {
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 80px;
+        }
+        
+        .ca-bar {
+            width: 200px;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #bdc3c7;
+        }
+        
+        .ca-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+            transition: width 0.5s ease;
+            border-radius: 8px;
+        }
+        
+        .tension-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .tension-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+        
+        .tension-unit {
+            font-size: 1em;
+            color: #7f8c8d;
+        }
+        
+        .status-display {
+            text-align: center;
+            margin: 30px 0;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .current-mode {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .mode-description {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        
+        .mechanism-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .mechanism-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .card-icon {
+            font-size: 1.5em;
+        }
+        
+        .card-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .card-content {
+            font-size: 1.05em;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        .formula {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #3498db;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            border: 2px solid #34495e;
+        }
+        
+        @keyframes contract {
+            0% { transform: scaleX(1); }
+            50% { transform: scaleX(0.85); }
+            100% { transform: scaleX(1); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        
+        .contracting {
+            animation: contract 0.6s ease-in-out;
+        }
+        
+        .pulsing {
+            animation: pulse 1s infinite;
+        }
+        
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .simulation-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .mechanism-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 골격근 자극 빈도 및 수축 메커니즘</h1>
+            <p>Skeletal Muscle Stimulation Frequency & Contraction Mechanism Simulation</p>
+        </div>
+
+        <div class="controls-section">
+            <div class="control-group">
+                <div class="slider-container">
+                    <div class="slider-label">자극 빈도 (Hz)</div>
+                    <input type="range" class="frequency-slider" id="frequencySlider" 
+                           min="0.5" max="50" step="0.5" value="1">
+                    <div class="frequency-value" id="frequencyValue">1.0 Hz</div>
+                </div>
+                
+                <div class="buttons">
+                    <button class="btn btn-twitch" onclick="setTwitchMode()">단일 수축</button>
+                    <button class="btn btn-summation" onclick="setSummationMode()">가중</button>
+                    <button class="btn btn-tetanus" onclick="setTetanusMode()">강직</button>
+                    <button class="btn btn-start" id="startBtn" onclick="startStimulation()">시작</button>
+                    <button class="btn btn-stop" id="stopBtn" onclick="stopStimulation()" style="display:none;">정지</button>
+                    <button class="btn btn-reset" onclick="resetSimulation()">초기화</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="simulation-area">
+            <div class="graph-container">
+                <div class="graph-title">근육 장력 변화 (Muscle Tension)</div>
+                <div class="graph">
+                    <canvas id="tensionCanvas" width="500" height="260"></canvas>
+                </div>
+            </div>
+
+            <div class="muscle-visual">
+                <div class="graph-title">근육 섬유 및 Ca²⁺ 농도</div>
+                <div class="muscle-fiber" id="muscleFiber">
+                    <div class="sarcomere">
+                        <div class="z-line"></div>
+                        <div class="actin-myosin" id="actinMyosin1"></div>
+                        <div class="actin-myosin" id="actinMyosin2"></div>
+                        <div class="actin-myosin" id="actinMyosin3"></div>
+                        <div class="z-line"></div>
+                    </div>
+                </div>
+                
+                <div class="ca-indicator">
+                    <div class="ca-level">Ca²⁺ 농도:</div>
+                    <div class="ca-bar">
+                        <div class="ca-fill" id="caFill" style="width: 10%;"></div>
+                    </div>
+                    <div id="caConcentration">0.1 μM</div>
+                </div>
+                
+                <div class="tension-display">
+                    <div class="tension-value" id="tensionValue">0</div>
+                    <div class="tension-unit">N (Newton)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-display">
+            <div class="current-mode" id="currentMode">휴식 상태</div>
+            <div class="mode-description" id="modeDescription">
+                근육이 자극을 받지 않은 상태입니다. 사르코플라즈마의 Ca²⁺ 농도가 낮아 근수축이 일어나지 않습니다.
+            </div>
+        </div>
+
+        <div class="mechanism-grid">
+            <div class="mechanism-card">
+                <div class="card-header">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Twitch (단일 수축)</div>
+                </div>
+                <div class="card-content">
+                    단일 활동전위에 의해 유발되는 최소한의 근수축 반응입니다. 
+                    <br><br>
+                    <strong>특징:</strong>
+                    <br>• 짧은 지속시간 (100-200ms)
+                    <br>• 최소한의 장력 발생
+                    <br>• Ca²⁺의 일시적 방출과 재흡수
+                    <br>• 단일 spike로 충분
+                    
+                    <div class="formula">
+                        빈도: 0.5-2 Hz<br>
+                        장력: 10-30% 최대
+                    </div>
+                </div>
+            </div>
+
+            <div class="mechanism-card">
+                <div class="card-header">
+                    <div class="card-icon">📈</div>
+                    <div class="card-title">Summation (가중)</div>
+                </div>
+                <div class="card-content">
+                    연속적인 자극으로 인해 개별 수축이 합쳐지는 현상입니다.
+                    <br><br>
+                    <strong>메커니즘:</strong>
+                    <br>• 이전 수축이 완전히 이완되기 전 새로운 자극
+                    <br>• Ca²⁺ 농도의 점진적 증가
+                    <br>• 크로스브릿지 사이클의 중첩
+                    <br>• 장력의 계단식 증가
+                    
+                    <div class="formula">
+                        빈도: 5-20 Hz<br>
+                        장력: 30-80% 최대
+                    </div>
+                </div>
+            </div>
+
+            <div class="mechanism-card">
+                <div class="card-header">
+                    <div class="card-icon">🔥</div>
+                    <div class="card-title">Tetanus (강직)</div>
+                </div>
+                <div class="card-content">
+                    고빈도 자극으로 달성되는 최대 지속적 수축 상태입니다.
+                    <br><br>
+                    <strong>조건:</strong>
+                    <br>• 사르코플라즈마 Ca²⁺ 농도 최대 유지
+                    <br>• 모든 크로스브릿지 활성화
+                    <br>• 이완 시간 없음
+                    <br>• 최대 장력 발생과 유지
+                    
+                    <div class="formula">
+                        빈도: 20-50+ Hz<br>
+                        장력: 80-100% 최대
+                    </div>
+                </div>
+            </div>
+
+            <div class="mechanism-card">
+                <div class="card-header">
+                    <div class="card-icon">🔬</div>
+                    <div class="card-title">분자적 메커니즘</div>
+                </div>
+                <div class="card-content">
+                    자극 빈도에 따른 세포 내 변화와 분자적 과정들입니다.
+                    <br><br>
+                    <strong>Ca²⁺ 동역학:</strong>
+                    <br>• SR에서 Ca²⁺ 방출 속도
+                    <br>• Ca²⁺-ATPase 재흡수 능력
+                    <br>• 트로포닌 C 결합 친화도
+                    <br>• 크로스브릿지 사이클링 속도
+                    
+                    <div class="formula">
+                        [Ca²⁺] = f(자극빈도)<br>
+                        장력 ∝ [Ca²⁺]ⁿ (n≈2-4)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e74c3c;"></div>
+                <span>자극 신호</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #27ae60;"></div>
+                <span>근육 장력</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f39c12;"></div>
+                <span>Ca²⁺ 농도</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3498db;"></div>
+                <span>사르코미어</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let currentFrequency = 1.0;
+        let isStimulating = false;
+        let stimulationInterval;
+        let currentMode = 'rest';
+        let tensionLevel = 0;
+        let caLevel = 0.1;
+        let timeCounter = 0;
+        let dataPoints = [];
+        let animationFrame;
+        
+        // Canvas 설정
+        const canvas = document.getElementById('tensionCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Canvas 크기 설정
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth - 4;
+            canvas.height = container.clientHeight - 4;
+        }
+        
+        // 슬라이더 이벤트 리스너
+        function initializeControls() {
+            const slider = document.getElementById('frequencySlider');
+            const frequencyDisplay = document.getElementById('frequencyValue');
+            
+            slider.addEventListener('input', function(e) {
+                currentFrequency = parseFloat(e.target.value);
+                frequencyDisplay.textContent = currentFrequency.toFixed(1) + ' Hz';
+            });
+            
+            // 초기값 설정
+            frequencyDisplay.textContent = currentFrequency.toFixed(1) + ' Hz';
+        }
+        
+        // 모드 설정 함수들
+        function setTwitchMode() {
+            currentMode = 'twitch';
+            currentFrequency = 1.0;
+            updateSlider();
+            updateStatus('Twitch (단일 수축)', '단일 활동전위에 의한 최소한의 근수축 반응입니다.');
+            console.log('Twitch mode activated');
+        }
+        
+        function setSummationMode() {
+            currentMode = 'summation';
+            currentFrequency = 10.0;
+            updateSlider();
+            updateStatus('Summation (가중)', '연속적인 자극으로 개별 수축이 합쳐지는 현상입니다.');
+            console.log('Summation mode activated');
+        }
+        
+        function setTetanusMode() {
+            currentMode = 'tetanus';
+            currentFrequency = 30.0;
+            updateSlider();
+            updateStatus('Tetanus (강직)', '고빈도 자극으로 달성되는 최대 지속적 수축 상태입니다.');
+            console.log('Tetanus mode activated');
+        }
+        
+        function updateSlider() {
+            const slider = document.getElementById('frequencySlider');
+            const frequencyDisplay = document.getElementById('frequencyValue');
+            slider.value = currentFrequency;
+            frequencyDisplay.textContent = currentFrequency.toFixed(1) + ' Hz';
+        }
+        
+        function updateStatus(mode, description) {
+            document.getElementById('currentMode').textContent = mode;
+            document.getElementById('modeDescription').textContent = description;
+        }
+        
+        // 시뮬레이션 시작/정지
+        function startStimulation() {
+            if (isStimulating) return;
+            
+            isStimulating = true;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'inline-block';
+            
+            const intervalTime = Math.max(50, 1000 / currentFrequency); // 최소 50ms 간격
+            console.log(`Starting stimulation at ${currentFrequency} Hz (${intervalTime}ms interval)`);
+            
+            stimulationInterval = setInterval(() => {
+                stimulateMuscle();
+            }, intervalTime);
+            
+            // 그래프 업데이트 시작
+            startGraphAnimation();
+        }
+        
+        function stopStimulation() {
+            isStimulating = false;
+            clearInterval(stimulationInterval);
+            document.getElementById('startBtn').style.display = 'inline-block';
+            document.getElementById('stopBtn').style.display = 'none';
+            
+            console.log('Stimulation stopped');
+            
+            // 점진적 이완
+            const relaxInterval = setInterval(() => {
+                tensionLevel *= 0.95;
+                caLevel = Math.max(0.1, caLevel * 0.98);
+                updateVisuals();
+                
+                if (tensionLevel < 1) {
+                    tensionLevel = 0;
+                    caLevel = 0.1;
+                    clearInterval(relaxInterval);
+                    updateVisuals();
+                }
+            }, 100);
+        }
+        
+        function stimulateMuscle() {
+            console.log(`Stimulating muscle at ${currentFrequency} Hz`);
+            
+            // 자극 빈도에 따른 Ca2+ 농도 및 장력 계산
+            let caIncrease, tensionIncrease, decayRate;
+            
+            if (currentFrequency < 5) {
+                // Twitch
+                caIncrease = 2.0;
+                tensionIncrease = 20;
+                decayRate = 0.85;
+            } else if (currentFrequency < 20) {
+                // Summation
+                caIncrease = 3.5;
+                tensionIncrease = 30;
+                decayRate = 0.92;
+            } else {
+                // Tetanus
+                caIncrease = 5.0;
+                tensionIncrease = 45;
+                decayRate = 0.98;
+            }
+            
+            // Ca2+ 농도 업데이트 (최대 10 μM)
+            caLevel = Math.min(caLevel + caIncrease, 10);
+            
+            // 장력 업데이트 (최대 100N)
+            tensionLevel = Math.min(tensionLevel + tensionIncrease, 100);
+            
+            // 데이터 포인트 추가
+            dataPoints.push({
+                time: timeCounter,
+                tension: tensionLevel,
+                calcium: caLevel,
+                stimulus: true
+            });
+            
+            timeCounter += 1000 / currentFrequency;
+            
+            // 배열 크기 제한
+            if (dataPoints.length > 500) {
+                dataPoints.shift();
+            }
+            
+            updateVisuals();
+            
+            // 빠른 감소 (낮은 빈도에서만)
+            if (currentFrequency < 15) {
+                setTimeout(() => {
+                    if (isStimulating) {
+                        caLevel *= decayRate;
+                        tensionLevel *= decayRate;
+                        updateVisuals();
+                    }
+                }, Math.min(200, 500 / currentFrequency));
+            }
+        }
+        
+        function updateVisuals() {
+            // Ca2+ 농도 표시
+            const caPercentage = Math.min(100, (caLevel / 10) * 100);
+            document.getElementById('caFill').style.width = caPercentage + '%';
+            document.getElementById('caConcentration').textContent = caLevel.toFixed(1) + ' μM';
+            
+            // 장력 표시
+            document.getElementById('tensionValue').textContent = Math.round(tensionLevel);
+            
+            // 근육 수축 시각화
+            const contractionLevel = tensionLevel / 100;
+            const muscleFiber = document.getElementById('muscleFiber');
+            const actinMyosins = document.querySelectorAll('.actin-myosin');
+            
+            if (contractionLevel > 0.1) {
+                muscleFiber.style.transform = `scaleX(${1 - contractionLevel * 0.15})`;
+                
+                const red = Math.round(243 - contractionLevel * 50);
+                const green = Math.round(156 - contractionLevel * 30);
+                const blue = Math.round(18 + contractionLevel * 50);
+                
+                actinMyosins.forEach(am => {
+                    am.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+                });
+            } else {
+                muscleFiber.style.transform = 'scaleX(1)';
+                actinMyosins.forEach(am => {
+                    am.style.backgroundColor = '#f39c12';
+                });
+            }
+        }
+        
+        function startGraphAnimation() {
+            function animate() {
+                drawGraph();
+                if (isStimulating) {
+                    animationFrame = requestAnimationFrame(animate);
+                }
+            }
+            animate();
+        }
+        
+        function drawGraph() {
+            if (!ctx) return;
+            
+            // Canvas 클리어
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 축 그리기
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            // Y축
+            ctx.moveTo(40, 20);
+            ctx.lineTo(40, canvas.height - 40);
+            // X축
+            ctx.moveTo(40, canvas.height - 40);
+            ctx.lineTo(canvas.width - 20, canvas.height - 40);
+            ctx.stroke();
+            
+            // 라벨 그리기
+            ctx.fillStyle = '#34495e';
+            ctx.font = '12px Arial';
+            ctx.fillText('장력 (N)', 5, 15);
+            ctx.fillText('시간 (s)', canvas.width - 50, canvas.height - 10);
+            
+            // Y축 눈금
+            for (let i = 0; i <= 4; i++) {
+                const y = canvas.height - 40 - (i * (canvas.height - 60) / 4);
+                const value = (i * 25).toString();
+                ctx.fillText(value, 10, y + 3);
+                
+                ctx.strokeStyle = '#e0e0e0';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(35, y);
+                ctx.lineTo(40, y);
+                ctx.stroke();
+            }
+            
+            if (dataPoints.length < 2) return;
+            
+            // 시간 범위 계산
+            const timeWindow = 5000; // 5초
+            const latestTime = Math.max(...dataPoints.map(p => p.time));
+            const startTime = Math.max(0, latestTime - timeWindow);
+            
+            // 데이터 필터링
+            const visiblePoints = dataPoints.filter(p => p.time >= startTime);
+            
+            if (visiblePoints.length < 2) return;
+            
+            // 장력 곡선 그리기
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            let firstPoint = true;
+            visiblePoints.forEach(point => {
+                const x = 40 + ((point.time - startTime) / timeWindow) * (canvas.width - 60);
+                const y = canvas.height - 40 - (point.tension / 100) * (canvas.height - 60);
+                
+                if (firstPoint) {
+                    ctx.moveTo(x, y);
+                    firstPoint = false;
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+            
+            // 자극 마커 그리기
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            visiblePoints.forEach(point => {
+                if (point.stimulus) {
+                    const x = 40 + ((point.time - startTime) / timeWindow) * (canvas.width - 60);
+                    ctx.beginPath();
+                    ctx.moveTo(x, canvas.height - 40);
+                    ctx.lineTo(x, canvas.height - 80);
+                    ctx.stroke();
+                }
+            });
+        }
+        
+        function resetSimulation() {
+            console.log('Resetting simulation');
+            stopStimulation();
+            tensionLevel = 0;
+            caLevel = 0.1;
+            timeCounter = 0;
+            dataPoints = [];
+            currentMode = 'rest';
+            
+            updateVisuals();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateStatus('휴식 상태', '근육이 자극을 받지 않은 상태입니다. 사르코플라즈마의 Ca²⁺ 농도가 낮아 근수축이 일어나지 않습니다.');
+        }
+        
+        // 초기화 및 이벤트 리스너
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing muscle stimulation simulation...');
+            
+            resizeCanvas();
+            initializeControls();
+            resetSimulation();
+            
+            // 윈도우 리사이즈 이벤트
+            window.addEventListener('resize', function() {
+                resizeCanvas();
+                drawGraph();
+            });
+            
+            // 키보드 단축키
+            document.addEventListener('keydown', function(e) {
+                switch(e.key.toLowerCase()) {
+                    case '1': 
+                        setTwitchMode(); 
+                        break;
+                    case '2': 
+                        setSummationMode(); 
+                        break;
+                    case '3': 
+                        setTetanusMode(); 
+                        break;
+                    case ' ': 
+                        e.preventDefault();
+                        if (isStimulating) {
+                            stopStimulation();
+                        } else {
+                            startStimulation();
+                        }
+                        break;
+                    case 'r': 
+                        resetSimulation(); 
+                        break;
+                }
+            });
+            
+            console.log('Simulation ready!');
+            console.log('키보드 단축키: 1(Twitch), 2(Summation), 3(Tetanus), Space(시작/정지), R(리셋)');
+        });
+    </script>
+</body>
+</html>
