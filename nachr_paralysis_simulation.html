@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nAChR 마비제 작용 메커니즘 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5aa0 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            min-width: 140px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-normal { background: linear-gradient(135deg, #28a745, #20c997); }
+        .btn-succinyl { background: linear-gradient(135deg, #fd7e14, #e63946); }
+        .btn-curare { background: linear-gradient(135deg, #6f42c1, #8e44ad); }
+        .btn-bungarotoxin { background: linear-gradient(135deg, #dc3545, #721c24); }
+        .btn-physostigmine { background: linear-gradient(135deg, #0dcaf0, #0077b6); }
+        .btn-reset { background: linear-gradient(135deg, #6c757d, #495057); }
+        
+        .simulation-area {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            min-height: 600px;
+            overflow: hidden;
+        }
+        
+        .drug-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 300px;
+            z-index: 10;
+        }
+        
+        .drug-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+        }
+        
+        .drug-mechanism {
+            font-size: 0.9em;
+            line-height: 1.4;
+            color: #495057;
+        }
+        
+        .nmj-structure {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin: 20px auto;
+        }
+        
+        /* Presynaptic Terminal */
+        .presynaptic-terminal {
+            position: absolute;
+            top: 80px;
+            left: 200px;
+            width: 150px;
+            height: 100px;
+            background: linear-gradient(135deg, #1e3a5f, #2c5aa0);
+            border-radius: 20px;
+            z-index: 2;
+        }
+        
+        /* Synaptic Vesicles */
+        .vesicle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ffd60a, #ffbe0b);
+            border-radius: 50%;
+            z-index: 3;
+        }
+        
+        .vesicle1 { top: 90px; left: 210px; }
+        .vesicle2 { top: 110px; left: 220px; }
+        .vesicle3 { top: 100px; left: 240px; }
+        .vesicle4 { top: 120px; left: 250px; }
+        .vesicle5 { top: 90px; left: 270px; }
+        .vesicle6 { top: 110px; left: 280px; }
+        .vesicle7 { top: 100px; left: 300px; }
+        .vesicle8 { top: 120px; left: 310px; }
+        
+        /* Synaptic Cleft */
+        .synaptic-cleft {
+            position: absolute;
+            top: 190px;
+            left: 150px;
+            width: 250px;
+            height: 40px;
+            background: rgba(174, 214, 241, 0.2);
+            border: 2px dashed #0dcaf0;
+            border-radius: 10px;
+            z-index: 1;
+        }
+        
+        /* Motor Endplate */
+        .motor-endplate {
+            position: absolute;
+            top: 240px;
+            left: 150px;
+            width: 250px;
+            height: 60px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-radius: 15px;
+            z-index: 2;
+        }
+        
+        /* nAChRs */
+        .nachr {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #e63946;
+            border-radius: 50%;
+            z-index: 4;
+            transition: all 1s ease;
+            border: 3px solid transparent;
+        }
+        
+        .nachr1 { top: 235px; left: 160px; }
+        .nachr2 { top: 235px; left: 180px; }
+        .nachr3 { top: 235px; left: 200px; }
+        .nachr4 { top: 235px; left: 220px; }
+        .nachr5 { top: 235px; left: 240px; }
+        .nachr6 { top: 235px; left: 260px; }
+        .nachr7 { top: 235px; left: 280px; }
+        .nachr8 { top: 235px; left: 300px; }
+        .nachr9 { top: 235px; left: 320px; }
+        .nachr10 { top: 235px; left: 340px; }
+        .nachr11 { top: 235px; left: 360px; }
+        .nachr12 { top: 235px; left: 380px; }
+        
+        .nachr13 { top: 255px; left: 170px; }
+        .nachr14 { top: 255px; left: 190px; }
+        .nachr15 { top: 255px; left: 210px; }
+        .nachr16 { top: 255px; left: 230px; }
+        .nachr17 { top: 255px; left: 250px; }
+        .nachr18 { top: 255px; left: 270px; }
+        .nachr19 { top: 255px; left: 290px; }
+        .nachr20 { top: 255px; left: 310px; }
+        .nachr21 { top: 255px; left: 330px; }
+        .nachr22 { top: 255px; left: 350px; }
+        .nachr23 { top: 255px; left: 370px; }
+        
+        /* ACh molecules */
+        .ach {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #ffd60a, #ffbe0b);
+            border-radius: 50%;
+            z-index: 5;
+            opacity: 0;
+            transition: all 1s ease;
+            font-size: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        /* Drug molecules */
+        .drug-molecule {
+            position: absolute;
+            z-index: 5;
+            opacity: 0;
+            transition: all 1s ease;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            border-radius: 50%;
+        }
+        
+        .succinylcholine {
+            width: 18px;
+            height: 18px;
+            background: radial-gradient(circle, #fd7e14, #e63946);
+        }
+        
+        .curare {
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, #6f42c1, #8e44ad);
+        }
+        
+        .bungarotoxin {
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #dc3545, #721c24);
+        }
+        
+        .physostigmine {
+            width: 14px;
+            height: 14px;
+            background: radial-gradient(circle, #0dcaf0, #0077b6);
+        }
+        
+        /* AChE enzymes */
+        .ache {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            border-radius: 3px;
+            z-index: 4;
+            opacity: 1;
+            transition: all 1s ease;
+            font-size: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .ache1 { top: 200px; left: 165px; }
+        .ache2 { top: 205px; left: 185px; }
+        .ache3 { top: 200px; left: 205px; }
+        .ache4 { top: 205px; left: 225px; }
+        .ache5 { top: 200px; left: 245px; }
+        .ache6 { top: 205px; left: 265px; }
+        .ache7 { top: 200px; left: 285px; }
+        .ache8 { top: 205px; left: 305px; }
+        .ache9 { top: 200px; left: 325px; }
+        .ache10 { top: 205px; left: 345px; }
+        .ache11 { top: 200px; left: 365px; }
+        .ache12 { top: 205px; left: 385px; }
+        
+        /* Na+ channels */
+        .na-channel {
+            position: absolute;
+            width: 6px;
+            height: 20px;
+            background: linear-gradient(180deg, #0dcaf0, #0077b6);
+            border-radius: 3px;
+            z-index: 3;
+            opacity: 0.6;
+            transition: all 1s ease;
+        }
+        
+        /* Molecular structure display */
+        .molecular-structure {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 400px;
+        }
+        
+        .structure-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+        }
+        
+        .structure-image {
+            width: 100%;
+            height: 120px;
+            background: #f8f9fa;
+            border: 2px dashed #6c757d;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .status-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .status-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+        }
+        
+        .status-description {
+            font-size: 1.2em;
+            color: #6c757d;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .mechanism-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .detail-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #1e3a5f;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-weight: bold;
+            font-size: 1.3em;
+            color: #1e3a5f;
+            margin-bottom: 15px;
+        }
+        
+        .card-content {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .card-content li {
+            padding: 8px 0;
+            font-size: 1.05em;
+            line-height: 1.5;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .card-content li:last-child {
+            border-bottom: none;
+        }
+        
+        .card-content li:before {
+            content: "▶ ";
+            color: #1e3a5f;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+        
+        @keyframes blockade {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        
+        @keyframes desensitization {
+            0% { background: #e63946; }
+            50% { background: #6c757d; }
+            100% { background: #343a40; }
+        }
+        
+        @keyframes inhibition {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 0.1; }
+        }
+        
+        .blocked {
+            animation: blockade 2s infinite;
+            border-color: #dc3545 !important;
+            border-width: 3px !important;
+        }
+        
+        .desensitized {
+            animation: desensitization 3s ease-in-out;
+            background: #343a40 !important;
+        }
+        
+        .inhibited {
+            animation: inhibition 2s ease-in-out;
+        }
+        
+        .bound {
+            border-color: #ffd60a !important;
+            border-width: 3px !important;
+            box-shadow: 0 0 10px rgba(255, 214, 10, 0.7);
+        }
+        
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .nmj-structure {
+                transform: scale(0.7);
+                margin: -50px auto;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                min-width: 200px;
+            }
+            
+            .drug-info {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-bottom: 20px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 nAChR 마비제 작용 메커니즘</h1>
+            <p>Neuromuscular Blocking Agents Mechanism Simulation</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-normal" onclick="showNormal()">정상 신호전달</button>
+            <button class="btn btn-succinyl" onclick="showSuccinylcholine()">Succinylcholine</button>
+            <button class="btn btn-curare" onclick="showCurare()">Curare</button>
+            <button class="btn btn-bungarotoxin" onclick="showBungarotoxin()">α-Bungarotoxin</button>
+            <button class="btn btn-physostigmine" onclick="showPhysostigmine()">Physostigmine</button>
+            <button class="btn btn-reset" onclick="resetSimulation()">↺ 초기화</button>
+        </div>
+
+        <div class="simulation-area">
+            <div class="drug-info" id="drugInfo">
+                <div class="drug-name" id="drugName">정상 신호전달</div>
+                <div class="drug-mechanism" id="drugMechanism">
+                    ACh가 nAChR에 결합하여 Na⁺ 채널을 개방하고 근육 수축을 유발합니다.
+                </div>
+            </div>
+
+            <div class="nmj-structure">
+                <!-- Presynaptic Terminal -->
+                <div class="presynaptic-terminal"></div>
+                
+                <!-- Synaptic Vesicles -->
+                <div class="vesicle vesicle1"></div>
+                <div class="vesicle vesicle2"></div>
+                <div class="vesicle vesicle3"></div>
+                <div class="vesicle vesicle4"></div>
+                <div class="vesicle vesicle5"></div>
+                <div class="vesicle vesicle6"></div>
+                <div class="vesicle vesicle7"></div>
+                <div class="vesicle vesicle8"></div>
+                
+                <!-- Synaptic Cleft -->
+                <div class="synaptic-cleft"></div>
+                
+                <!-- Motor Endplate -->
+                <div class="motor-endplate"></div>
+                
+                <!-- nAChRs -->
+                <div class="nachr nachr1" id="nachr1"></div>
+                <div class="nachr nachr2" id="nachr2"></div>
+                <div class="nachr nachr3" id="nachr3"></div>
+                <div class="nachr nachr4" id="nachr4"></div>
+                <div class="nachr nachr5" id="nachr5"></div>
+                <div class="nachr nachr6" id="nachr6"></div>
+                <div class="nachr nachr7" id="nachr7"></div>
+                <div class="nachr nachr8" id="nachr8"></div>
+                <div class="nachr nachr9" id="nachr9"></div>
+                <div class="nachr nachr10" id="nachr10"></div>
+                <div class="nachr nachr11" id="nachr11"></div>
+                <div class="nachr nachr12" id="nachr12"></div>
+                <div class="nachr nachr13" id="nachr13"></div>
+                <div class="nachr nachr14" id="nachr14"></div>
+                <div class="nachr nachr15" id="nachr15"></div>
+                <div class="nachr nachr16" id="nachr16"></div>
+                <div class="nachr nachr17" id="nachr17"></div>
+                <div class="nachr nachr18" id="nachr18"></div>
+                <div class="nachr nachr19" id="nachr19"></div>
+                <div class="nachr nachr20" id="nachr20"></div>
+                <div class="nachr nachr21" id="nachr21"></div>
+                <div class="nachr nachr22" id="nachr22"></div>
+                <div class="nachr nachr23" id="nachr23"></div>
+                
+                <!-- ACh molecules -->
+                <div class="ach" id="ach1" style="top: 205px; left: 170px;">A</div>
+                <div class="ach" id="ach2" style="top: 210px; left: 190px;">A</div>
+                <div class="ach" id="ach3" style="top: 205px; left: 210px;">A</div>
+                <div class="ach" id="ach4" style="top: 210px; left: 230px;">A</div>
+                <div class="ach" id="ach5" style="top: 205px; left: 250px;">A</div>
+                <div class="ach" id="ach6" style="top: 210px; left: 270px;">A</div>
+                <div class="ach" id="ach7" style="top: 205px; left: 290px;">A</div>
+                <div class="ach" id="ach8" style="top: 210px; left: 310px;">A</div>
+                <div class="ach" id="ach9" style="top: 205px; left: 330px;">A</div>
+                <div class="ach" id="ach10" style="top: 210px; left: 350px;">A</div>
+                <div class="ach" id="ach11" style="top: 205px; left: 370px;">A</div>
+                <div class="ach" id="ach12" style="top: 210px; left: 390px;">A</div>
+                
+                <!-- Drug molecules -->
+                <div class="drug-molecule succinylcholine" id="succinyl1" style="top: 205px; left: 180px;">S</div>
+                <div class="drug-molecule succinylcholine" id="succinyl2" style="top: 210px; left: 220px;">S</div>
+                <div class="drug-molecule succinylcholine" id="succinyl3" style="top: 205px; left: 260px;">S</div>
+                <div class="drug-molecule succinylcholine" id="succinyl4" style="top: 210px; left: 300px;">S</div>
+                <div class="drug-molecule succinylcholine" id="succinyl5" style="top: 205px; left: 340px;">S</div>
+                <div class="drug-molecule succinylcholine" id="succinyl6" style="top: 210px; left: 380px;">S</div>
+                
+                <div class="drug-molecule curare" id="curare1" style="top: 205px; left: 175px;">C</div>
+                <div class="drug-molecule curare" id="curare2" style="top: 210px; left: 215px;">C</div>
+                <div class="drug-molecule curare" id="curare3" style="top: 205px; left: 255px;">C</div>
+                <div class="drug-molecule curare" id="curare4" style="top: 210px; left: 295px;">C</div>
+                <div class="drug-molecule curare" id="curare5" style="top: 205px; left: 335px;">C</div>
+                <div class="drug-molecule curare" id="curare6" style="top: 210px; left: 375px;">C</div>
+                
+                <div class="drug-molecule bungarotoxin" id="bungar1" style="top: 205px; left: 185px;">B</div>
+                <div class="drug-molecule bungarotoxin" id="bungar2" style="top: 210px; left: 225px;">B</div>
+                <div class="drug-molecule bungarotoxin" id="bungar3" style="top: 205px; left: 265px;">B</div>
+                <div class="drug-molecule bungarotoxin" id="bungar4" style="top: 210px; left: 305px;">B</div>
+                <div class="drug-molecule bungarotoxin" id="bungar5" style="top: 205px; left: 345px;">B</div>
+                <div class="drug-molecule bungarotoxin" id="bungar6" style="top: 210px; left: 385px;">B</div>
+                
+                <div class="drug-molecule physostigmine" id="physo1" style="top: 200px; left: 165px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo2" style="top: 205px; left: 185px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo3" style="top: 200px; left: 205px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo4" style="top: 205px; left: 225px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo5" style="top: 200px; left: 245px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo6" style="top: 205px; left: 265px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo7" style="top: 200px; left: 285px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo8" style="top: 205px; left: 305px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo9" style="top: 200px; left: 325px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo10" style="top: 205px; left: 345px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo11" style="top: 200px; left: 365px;">P</div>
+                <div class="drug-molecule physostigmine" id="physo12" style="top: 205px; left: 385px;">P</div>
+                
+                <!-- AChE enzymes -->
+                <div class="ache ache1" id="ache1">E</div>
+                <div class="ache ache2" id="ache2">E</div>
+                <div class="ache ache3" id="ache3">E</div>
+                <div class="ache ache4" id="ache4">E</div>
+                <div class="ache ache5" id="ache5">E</div>
+                <div class="ache ache6" id="ache6">E</div>
+                <div class="ache ache7" id="ache7">E</div>
+                <div class="ache ache8" id="ache8">E</div>
+                <div class="ache ache9" id="ache9">E</div>
+                <div class="ache ache10" id="ache10">E</div>
+                <div class="ache ache11" id="ache11">E</div>
+                <div class="ache ache12" id="ache12">E</div>
+            </div>
+
+            <div class="molecular-structure" id="molecularStructure">
+                <div class="structure-title" id="structureTitle">분자 구조</div>
+                <div class="structure-image" id="structureImage">
+                    정상 ACh 분자구조
+                </div>
+                <div style="font-size: 0.9em; color: #6c757d;" id="structureDescription">
+                    아세틸콜린의 정상적인 구조와 기능
+                </div>
+            </div>
+        </div>
+
+        <div class="status-display">
+            <div class="status-title" id="statusTitle">nAChR 신호전달 메커니즘</div>
+            <div class="status-description" id="statusDescription">
+                다양한 마비제와 차단제가 신경근접합부에서 어떻게 작용하는지 관찰하세요.
+            </div>
+        </div>
+
+        <div class="mechanism-details">
+            <div class="detail-card">
+                <div class="card-title">🔴 Succinylcholine (석시닐콜린)</div>
+                <ul class="card-content">
+                    <li>두 개의 연결된 ACh 분자 구조</li>
+                    <li>nAChR에 빠르게 결합하여 초기 수축 유발</li>
+                    <li>AChE에 저항성 - 지속적 자극</li>
+                    <li>수용체 탈감작(desensitization) 유발</li>
+                    <li>Na⁺ 채널 비활성화로 마비 진행</li>
+                    <li>빠른 작용 개시, 중간 지속시간</li>
+                </ul>
+            </div>
+            
+            <div class="detail-card">
+                <div class="card-title">🟣 Curare (d-tubocurarine)</div>
+                <ul class="card-content">
+                    <li>경쟁적 nAChR 길항제</li>
+                    <li>ACh와 경쟁적으로 수용체 결합</li>
+                    <li>수용체 활성화 없이 차단</li>
+                    <li>가역적 결합 - 농도 의존적</li>
+                    <li>근육 이완제로 마취에 사용</li>
+                    <li>호흡근 마비 위험성</li>
+                </ul>
+            </div>
+            
+            <div class="detail-card">
+                <div class="card-title">🔴 α-Bungarotoxin (알파 분가로톡신)</div>
+                <ul class="card-content">
+                    <li>코브라 독의 주요 성분</li>
+                    <li>nAChR에 비가역적 결합</li>
+                    <li>극도로 강한 친화도</li>
+                    <li>ACh 결합부위 영구 차단</li>
+                    <li>연구용 nAChR 표지자로 사용</li>
+                    <li>치명적 호흡마비 유발</li>
+                </ul>
+            </div>
+            
+            <div class="detail-card">
+                <div class="card-title">🔵 Physostigmine (피조스티그민)</div>
+                <ul class="card-content">
+                    <li>AChE 활성의 가역적 억제제</li>
+                    <li>시냅스 ACh 농도 증가</li>
+                    <li>과도한 수용체 자극</li>
+                    <li>근육 강직과 경련 유발</li>
+                    <li>중추신경계 침투 가능</li>
+                    <li>항콜린제 중독 치료에도 사용</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e63946;"></div>
+                <span>nAChR</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: radial-gradient(circle, #ffd60a, #ffbe0b);"></div>
+                <span>ACh</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: radial-gradient(circle, #fd7e14, #e63946);"></div>
+                <span>Succinylcholine</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: radial-gradient(circle, #6f42c1, #8e44ad);"></div>
+                <span>Curare</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: radial-gradient(circle, #dc3545, #721c24);"></div>
+                <span>α-Bungarotoxin</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: radial-gradient(circle, #0dcaf0, #0077b6);"></div>
+                <span>Physostigmine</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #8e44ad, #9b59b6);"></div>
+                <span>AChE</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'normal';
+        
+        function resetAllStates() {
+            // 모든 분자와 효소 숨기기
+            const molecules = document.querySelectorAll('.ach, .drug-molecule');
+            molecules.forEach(mol => mol.style.opacity = '0');
+            
+            // 모든 수용체 상태 초기화
+            const receptors = document.querySelectorAll('.nachr');
+            receptors.forEach(receptor => {
+                receptor.classList.remove('blocked', 'desensitized', 'bound', 'inhibited');
+                receptor.style.background = '#e63946';
+                receptor.style.borderColor = 'transparent';
+                receptor.style.borderWidth = '3px';
+            });
+            
+            // AChE 효소 상태 초기화
+            const enzymes = document.querySelectorAll('.ache');
+            enzymes.forEach(enzyme => {
+                enzyme.classList.remove('inhibited');
+                enzyme.style.opacity = '1';
+            });
+        }
+        
+        function updateInfo(name, mechanism, structureTitle, structureDesc, structureContent) {
+            document.getElementById('drugName').textContent = name;
+            document.getElementById('drugMechanism').textContent = mechanism;
+            document.getElementById('structureTitle').textContent = structureTitle;
+            document.getElementById('structureDescription').textContent = structureDesc;
+            document.getElementById('structureImage').textContent = structureContent;
+        }
+        
+        function updateStatus(title, description) {
+            document.getElementById('statusTitle').textContent = title;
+            document.getElementById('statusDescription').textContent = description;
+        }
+        
+        function showNormal() {
+            resetAllStates();
+            currentMode = 'normal';
+            
+            updateInfo(
+                '정상 신호전달',
+                'ACh가 nAChR에 결합하여 Na⁺ 채널을 개방하고 근육 수축을 유발합니다.',
+                'Acetylcholine 분자구조',
+                '정상적인 신경전달물질 ACh의 구조와 기능',
+                'CH₃-CO-O-CH₂-CH₂-N⁺(CH₃)₃'
+            );
+            
+            updateStatus(
+                '정상 신호전달 (Normal Neurotransmission)',
+                'ACh가 방출되어 nAChR에 결합하고, AChE에 의해 분해되어 신호가 종료됩니다.'
+            );
+            
+            // ACh 분자 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 12; i++) {
+                    setTimeout(() => {
+                        document.getElementById(`ach${i}`).style.opacity = '1';
+                    }, i * 100);
+                }
+            }, 500);
+            
+            // nAChR 결합
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('bound');
+                    }, index * 50);
+                });
+            }, 1500);
+        }
+        
+        function showSuccinylcholine() {
+            resetAllStates();
+            currentMode = 'succinylcholine';
+            
+            updateInfo(
+                'Succinylcholine (석시닐콜린)',
+                '두 개의 연결된 ACh 분자로 구성. 초기 수축 후 수용체 탈감작을 유발하여 마비를 일으킵니다.',
+                'Succinylcholine 분자구조',
+                '두 개의 ACh가 연결된 구조 - 지속적 자극 후 탈감작',
+                'ACh-CH₂-CH₂-ACh (Bis-acetylcholine)'
+            );
+            
+            updateStatus(
+                'Succinylcholine 작용 (Depolarizing Block)',
+                '초기 근육 수축(fasciculation) 후 수용체 탈감작으로 인한 이완성 마비가 발생합니다.'
+            );
+            
+            // Succinylcholine 분자 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 6; i++) {
+                    setTimeout(() => {
+                        document.getElementById(`succinyl${i}`).style.opacity = '1';
+                    }, i * 150);
+                }
+            }, 500);
+            
+            // 초기 수용체 활성화
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('bound');
+                    }, index * 30);
+                });
+            }, 1500);
+            
+            // 수용체 탈감작
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.remove('bound');
+                        receptor.classList.add('desensitized');
+                    }, index * 50);
+                });
+            }, 3000);
+        }
+        
+        function showCurare() {
+            resetAllStates();
+            currentMode = 'curare';
+            
+            updateInfo(
+                'Curare (d-tubocurarine)',
+                '경쟁적 nAChR 길항제로 ACh와 경쟁하여 수용체에 결합하지만 활성화시키지 않습니다.',
+                'Curare 분자구조',
+                '경쟁적 길항제 - 수용체 차단 without 활성화',
+                'Quaternary ammonium alkaloid'
+            );
+            
+            updateStatus(
+                'Curare 작용 (Competitive Block)',
+                '비탈분극성 차단제로 수용체를 차단하여 근육 이완을 유발합니다.'
+            );
+            
+            // Curare 분자 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 6; i++) {
+                    setTimeout(() => {
+                        document.getElementById(`curare${i}`).style.opacity = '1';
+                    }, i * 150);
+                }
+            }, 500);
+            
+            // 수용체 차단
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('blocked');
+                    }, index * 50);
+                });
+            }, 1500);
+            
+            // ACh 무효화 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 12; i++) {
+                    setTimeout(() => {
+                        const ach = document.getElementById(`ach${i}`);
+                        ach.style.opacity = '0.3';
+                        ach.style.animation = 'blockade 2s infinite';
+                    }, i * 100);
+                }
+            }, 2500);
+        }
+        
+        function showBungarotoxin() {
+            resetAllStates();
+            currentMode = 'bungarotoxin';
+            
+            updateInfo(
+                'α-Bungarotoxin (알파 분가로톡신)',
+                '코브라 독 성분으로 nAChR에 비가역적으로 결합하여 영구적 차단을 유발합니다.',
+                'α-Bungarotoxin 구조',
+                '비가역적 길항제 - 영구적 수용체 차단',
+                'Snake venom neurotoxin (74 amino acids)'
+            );
+            
+            updateStatus(
+                'α-Bungarotoxin 작용 (Irreversible Block)',
+                '비가역적 수용체 차단으로 인한 영구적 마비와 호흡정지를 유발합니다.'
+            );
+            
+            // Bungarotoxin 분자 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 6; i++) {
+                    setTimeout(() => {
+                        document.getElementById(`bungar${i}`).style.opacity = '1';
+                    }, i * 200);
+                }
+            }, 500);
+            
+            // 강력한 수용체 차단
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('blocked');
+                        receptor.style.background = '#721c24';
+                        receptor.style.borderColor = '#dc3545';
+                    }, index * 30);
+                });
+            }, 1500);
+            
+            // ACh 완전 무효화
+            setTimeout(() => {
+                for (let i = 1; i <= 12; i++) {
+                    const ach = document.getElementById(`ach${i}`);
+                    ach.style.opacity = '0.1';
+                }
+            }, 2500);
+        }
+        
+        function showPhysostigmine() {
+            resetAllStates();
+            currentMode = 'physostigmine';
+            
+            updateInfo(
+                'Physostigmine (피조스티그민)',
+                'AChE를 가역적으로 억제하여 시냅스 ACh 농도를 증가시키고 과도한 수용체 자극을 유발합니다.',
+                'Physostigmine 분자구조',
+                'AChE 억제제 - 과도한 ACh 축적',
+                'Carbamate cholinesterase inhibitor'
+            );
+            
+            updateStatus(
+                'Physostigmine 작용 (AChE Inhibition)',
+                'AChE 억제로 인한 ACh 축적이 과도한 수용체 자극과 근육 강직을 유발합니다.'
+            );
+            
+            // AChE 억제제 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 12; i++) {
+                    setTimeout(() => {
+                        document.getElementById(`physo${i}`).style.opacity = '1';
+                    }, i * 100);
+                }
+            }, 500);
+            
+            // AChE 억제
+            setTimeout(() => {
+                const enzymes = document.querySelectorAll('.ache');
+                enzymes.forEach((enzyme, index) => {
+                    setTimeout(() => {
+                        enzyme.classList.add('inhibited');
+                    }, index * 50);
+                });
+            }, 1000);
+            
+            // ACh 축적
+            setTimeout(() => {
+                for (let i = 1; i <= 12; i++) {
+                    setTimeout(() => {
+                        const ach = document.getElementById(`ach${i}`);
+                        ach.style.opacity = '1';
+                        ach.style.animation = 'blockade 1s infinite';
+                    }, i * 50);
+                }
+            }, 1500);
+            
+            // 과도한 수용체 자극
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('bound');
+                        receptor.style.animation = 'blockade 0.5s infinite';
+                        receptor.style.borderColor = '#ffd60a';
+                    }, index * 20);
+                });
+            }, 2000);
+        }
+        
+        function resetSimulation() {
+            resetAllStates();
+            currentMode = 'normal';
+            showNormal();
+        }
+        
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            showNormal();
+            
+            // 키보드 단축키
+            document.addEventListener('keydown', function(e) {
+                switch(e.key.toLowerCase()) {
+                    case '1': showNormal(); break;
+                    case '2': showSuccinylcholine(); break;
+                    case '3': showCurare(); break;
+                    case '4': showBungarotoxin(); break;
+                    case '5': showPhysostigmine(); break;
+                    case 'r': resetSimulation(); break;
+                }
+            });
+            
+            console.log('nAChR 마비제 시뮬레이션이 준비되었습니다!');
+            console.log('키보드 단축키: 1(정상), 2(Succinyl), 3(Curare), 4(Bungarotoxin), 5(Physostigmine), R(리셋)');
+        });
+    </script>
+</body>
+</html>
