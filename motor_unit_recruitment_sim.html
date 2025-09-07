@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor Unit Recruitment - 운동단위 모집 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(44, 62, 80, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #34495e;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #34495e;
+            margin-bottom: 10px;
+            font-weight: 300;
+            letter-spacing: -1px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            font-weight: 300;
+        }
+        
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+            align-items: center;
+        }
+        
+        .force-control {
+            background: #ecf0f1;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid #34495e;
+        }
+        
+        .force-label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+        
+        .force-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #bdc3c7;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .force-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #34495e;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .force-value {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #34495e;
+            margin-top: 10px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            min-width: 120px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn-demo { background: #34495e; }
+        .btn-reset { background: #95a5a6; }
+        .btn-info { background: #3498db; }
+        
+        .force-indicator {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-right: 4px solid #34495e;
+        }
+        
+        .force-bar {
+            width: 100%;
+            height: 30px;
+            background: #bdc3c7;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .force-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #f39c12, #e74c3c);
+            transition: width 0.5s ease;
+            border-radius: 15px;
+        }
+        
+        .simulation-area {
+            background: white;
+            border: 2px solid #ecf0f1;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            min-height: 600px;
+        }
+        
+        .motor-units-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+        }
+        
+        /* Motor Unit Structure */
+        .motor-unit {
+            position: absolute;
+            width: 300px;
+            height: 80px;
+            transition: all 0.8s ease;
+        }
+        
+        .unit1 { top: 50px; left: 100px; }
+        .unit2 { top: 150px; left: 150px; }
+        .unit3 { top: 250px; left: 100px; }
+        .unit4 { top: 350px; left: 150px; }
+        .unit5 { top: 450px; left: 100px; }
+        
+        /* Motor Neuron */
+        .motor-neuron {
+            position: absolute;
+            left: 0;
+            top: 30px;
+            width: 80px;
+            height: 20px;
+            background: #34495e;
+            border-radius: 10px;
+            transition: all 0.5s ease;
+        }
+        
+        .neuron-body {
+            position: absolute;
+            left: -20px;
+            top: -10px;
+            width: 30px;
+            height: 40px;
+            background: #2c3e50;
+            border-radius: 50%;
+        }
+        
+        .axon {
+            position: absolute;
+            left: 70px;
+            top: 5px;
+            width: 120px;
+            height: 10px;
+            background: #34495e;
+            border-radius: 5px;
+        }
+        
+        /* Muscle Fibers */
+        .muscle-fibers {
+            position: absolute;
+            left: 180px;
+            top: 0;
+            width: 120px;
+            height: 80px;
+        }
+        
+        .muscle-fiber {
+            width: 100%;
+            height: 12px;
+            background: #95a5a6;
+            border-radius: 6px;
+            margin: 4px 0;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .fiber-active {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+        
+        .contraction-wave {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            transition: left 0.8s ease;
+        }
+        
+        .fiber-active .contraction-wave {
+            left: 100%;
+        }
+        
+        /* Neural Activity Indicators */
+        .neural-activity {
+            position: absolute;
+            top: 35px;
+            left: 20px;
+            width: 8px;
+            height: 8px;
+            background: #f39c12;
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .unit-active .neural-activity {
+            opacity: 1;
+            animation: pulse 1s infinite;
+        }
+        
+        .unit-active .motor-neuron {
+            background: #2c3e50;
+            box-shadow: 0 0 15px rgba(44, 62, 80, 0.6);
+        }
+        
+        .unit-active .axon {
+            background: #2c3e50;
+        }
+        
+        /* Labels */
+        .unit-label {
+            position: absolute;
+            left: -40px;
+            top: 25px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #7f8c8d;
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+        }
+        
+        /* Recruitment Order Indicator */
+        .recruitment-order {
+            position: absolute;
+            right: 50px;
+            top: 50px;
+            background: rgba(236, 240, 241, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #34495e;
+        }
+        
+        .order-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+        
+        .order-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+        
+        .order-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #bdc3c7;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .order-indicator.active {
+            background: #e74c3c;
+            box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+        }
+        
+        /* Force Output Graph */
+        .force-graph {
+            position: absolute;
+            bottom: 20px;
+            left: 50px;
+            width: 400px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        .graph-title {
+            text-align: center;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+        
+        .graph-area {
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(to right, #ecf0f1 0%, #ecf0f1 100%);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .force-curve {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 0%;
+            background: linear-gradient(to top, #27ae60, #2ecc71);
+            transition: all 0.5s ease;
+            border-radius: 3px 3px 0 0;
+        }
+        
+        /* Information Panel */
+        .info-panel {
+            background: #ecf0f1;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border-left: 4px solid #34495e;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .info-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-content {
+            font-size: 1em;
+            line-height: 1.6;
+            color: #5d6d7e;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .info-list li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .info-list li:before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #34495e;
+            font-size: 0.8em;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+        
+        @keyframes activation-wave {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .demo-mode {
+            animation: demo-highlight 2s infinite;
+        }
+        
+        @keyframes demo-highlight {
+            0%, 100% { box-shadow: 0 0 0 rgba(52, 73, 94, 0); }
+            50% { box-shadow: 0 0 20px rgba(52, 73, 94, 0.3); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .control-panel {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .motor-units-container {
+                transform: scale(0.8);
+                height: 400px;
+            }
+            
+            .recruitment-order {
+                position: relative;
+                margin-top: 20px;
+                right: auto;
+                top: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Motor Unit Recruitment Simulation</h1>
+            <p>운동단위 모집을 통한 골격근 힘 조절 메커니즘</p>
+        </div>
+
+        <div class="control-panel">
+            <div class="force-control">
+                <div class="force-label">목표 근력 (%)</div>
+                <input type="range" min="0" max="100" value="0" class="force-slider" id="forceSlider">
+                <div class="force-value" id="forceValue">0%</div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn btn-demo" onclick="runDemo()">🎬 자동 데모</button>
+                <button class="btn btn-reset" onclick="resetSimulation()">↺ 초기화</button>
+                <button class="btn btn-info" onclick="toggleInfo()">📚 정보</button>
+            </div>
+            
+            <div class="force-indicator">
+                <div>현재 출력</div>
+                <div class="force-bar">
+                    <div class="force-fill" id="forceFill"></div>
+                </div>
+                <div id="currentForce">0%</div>
+            </div>
+        </div>
+
+        <div class="simulation-area">
+            <div class="motor-units-container">
+                <!-- Motor Unit 1 (가장 작은 단위) -->
+                <div class="motor-unit unit1" id="unit1">
+                    <div class="unit-label">Type I<br>Small</div>
+                    <div class="motor-neuron">
+                        <div class="neuron-body"></div>
+                        <div class="neural-activity"></div>
+                    </div>
+                    <div class="axon"></div>
+                    <div class="muscle-fibers">
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                    </div>
+                </div>
+
+                <!-- Motor Unit 2 -->
+                <div class="motor-unit unit2" id="unit2">
+                    <div class="unit-label">Type IIa<br>Medium</div>
+                    <div class="motor-neuron">
+                        <div class="neuron-body"></div>
+                        <div class="neural-activity"></div>
+                    </div>
+                    <div class="axon"></div>
+                    <div class="muscle-fibers">
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                    </div>
+                </div>
+
+                <!-- Motor Unit 3 -->
+                <div class="motor-unit unit3" id="unit3">
+                    <div class="unit-label">Type IIa<br>Medium</div>
+                    <div class="motor-neuron">
+                        <div class="neuron-body"></div>
+                        <div class="neural-activity"></div>
+                    </div>
+                    <div class="axon"></div>
+                    <div class="muscle-fibers">
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                    </div>
+                </div>
+
+                <!-- Motor Unit 4 -->
+                <div class="motor-unit unit4" id="unit4">
+                    <div class="unit-label">Type IIx<br>Large</div>
+                    <div class="motor-neuron">
+                        <div class="neuron-body"></div>
+                        <div class="neural-activity"></div>
+                    </div>
+                    <div class="axon"></div>
+                    <div class="muscle-fibers">
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                    </div>
+                </div>
+
+                <!-- Motor Unit 5 (가장 큰 단위) -->
+                <div class="motor-unit unit5" id="unit5">
+                    <div class="unit-label">Type IIx<br>Large</div>
+                    <div class="motor-neuron">
+                        <div class="neuron-body"></div>
+                        <div class="neural-activity"></div>
+                    </div>
+                    <div class="axon"></div>
+                    <div class="muscle-fibers">
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                        <div class="muscle-fiber"><div class="contraction-wave"></div></div>
+                    </div>
+                </div>
+
+                <!-- Recruitment Order Indicator -->
+                <div class="recruitment-order">
+                    <div class="order-title">모집 순서</div>
+                    <div class="order-item">
+                        <div class="order-indicator" id="order1"></div>
+                        <span>1. Type I (지속성)</span>
+                    </div>
+                    <div class="order-item">
+                        <div class="order-indicator" id="order2"></div>
+                        <span>2. Type IIa (중간)</span>
+                    </div>
+                    <div class="order-item">
+                        <div class="order-indicator" id="order3"></div>
+                        <span>3. Type IIa (중간)</span>
+                    </div>
+                    <div class="order-item">
+                        <div class="order-indicator" id="order4"></div>
+                        <span>4. Type IIx (폭발력)</span>
+                    </div>
+                    <div class="order-item">
+                        <div class="order-indicator" id="order5"></div>
+                        <span>5. Type IIx (폭발력)</span>
+                    </div>
+                </div>
+
+                <!-- Force Output Graph -->
+                <div class="force-graph">
+                    <div class="graph-title">근력 출력 그래프</div>
+                    <div class="graph-area">
+                        <div class="force-curve" id="forceCurve"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel" id="infoPanel" style="display: none;">
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-title">
+                        🧬 Motor Unit 개념
+                    </div>
+                    <div class="info-content">
+                        <ul class="info-list">
+                            <li>α-motor neuron 하나가 지배하는 muscle fiber들의 집합</li>
+                            <li>같은 motor unit의 모든 fiber는 동시에 수축</li>
+                            <li>Recruitment을 통한 단계적 힘 조절</li>
+                            <li>Size Principle에 따른 순차적 활성화</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-title">
+                        📊 Recruitment Principle
+                    </div>
+                    <div class="info-content">
+                        <ul class="info-list">
+                            <li>작은 motor neuron부터 먼저 활성화</li>
+                            <li>Type I → Type IIa → Type IIx 순서</li>
+                            <li>섬세한 힘 조절이 가능</li>
+                            <li>피로도가 낮은 섬유부터 사용</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-title">
+                        🔥 Muscle Fiber Types
+                    </div>
+                    <div class="info-content">
+                        <ul class="info-list">
+                            <li><strong>Type I:</strong> 지속력, 산화적, 적색</li>
+                            <li><strong>Type IIa:</strong> 중간 속도, 혼합형</li>
+                            <li><strong>Type IIx:</strong> 빠른 속도, 폭발력, 백색</li>
+                            <li>각 타입마다 다른 역할과 특성</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-title">
+                        ⚡ 생리학적 의미
+                    </div>
+                    <div class="info-content">
+                        <ul class="info-list">
+                            <li>에너지 효율성 극대화</li>
+                            <li>정밀한 운동 제어</li>
+                            <li>지구력과 순발력의 균형</li>
+                            <li>적응적 근육 사용 전략</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeUnits = 0;
+        let demoRunning = false;
+        let demoInterval;
+
+        // Force slider 이벤트 리스너
+        const forceSlider = document.getElementById('forceSlider');
+        const forceValue = document.getElementById('forceValue');
+        const forceFill = document.getElementById('forceFill');
+        const currentForce = document.getElementById('currentForce');
+        const forceCurve = document.getElementById('forceCurve');
+
+        forceSlider.addEventListener('input', function() {
+            const force = parseInt(this.value);
+            updateForceDisplay(force);
+            updateMotorUnits(force);
+        });
+
+        function updateForceDisplay(force) {
+            forceValue.textContent = force + '%';
+            currentForce.textContent = force + '%';
+            forceFill.style.width = force + '%';
+            forceCurve.style.width = (force * 0.8) + '%';
+            forceCurve.style.height = (force * 0.6) + '%';
+        }
+
+        function updateMotorUnits(force) {
+            // Size Principle에 따른 Motor Unit 활성화
+            const thresholds = [10, 30, 50, 70, 90]; // 각 unit의 활성화 임계값
+            
+            for (let i = 1; i <= 5; i++) {
+                const unit = document.getElementById(`unit${i}`);
+                const orderIndicator = document.getElementById(`order${i}`);
+                
+                if (force >= thresholds[i-1]) {
+                    activateUnit(unit, orderIndicator);
+                } else {
+                    deactivateUnit(unit, orderIndicator);
+                }
+            }
+            
+            // 활성화된 unit 개수 계산
+            activeUnits = thresholds.filter(threshold => force >= threshold).length;
+        }
+
+        function activateUnit(unit, orderIndicator) {
+            unit.classList.add('unit-active');
+            orderIndicator.classList.add('active');
+            
+            // Muscle fiber 활성화
+            const fibers = unit.querySelectorAll('.muscle-fiber');
+            fibers.forEach((fiber, index) => {
+                setTimeout(() => {
+                    fiber.classList.add('fiber-active');
+                }, index * 100);
+            });
+        }
+
+        function deactivateUnit(unit, orderIndicator) {
+            unit.classList.remove('unit-active');
+            orderIndicator.classList.remove('active');
+            
+            // Muscle fiber 비활성화
+            const fibers = unit.querySelectorAll('.muscle-fiber');
+            fibers.forEach(fiber => {
+                fiber.classList.remove('fiber-active');
+            });
+        }
+
+        function runDemo() {
+            if (demoRunning) {
+                stopDemo();
+                return;
+            }
+            
+            demoRunning = true;
+            document.querySelector('.btn-demo').textContent = '⏸️ 데모 중지';
+            document.querySelector('.simulation-area').classList.add('demo-mode');
+            
+            let step = 0;
+            const steps = [0, 15, 35, 55, 75, 95, 75, 55, 35, 15, 0];
+            
+            demoInterval = setInterval(() => {
+                if (step >= steps.length) {
+                    step = 0;
+                }
+                
+                const targetForce = steps[step];
+                forceSlider.value = targetForce;
+                updateForceDisplay(targetForce);
+                updateMotorUnits(targetForce);
+                
+                step++;
+            }, 1500);
+        }
+
+        function stopDemo() {
+            demoRunning = false;
+            document.querySelector('.btn-demo').textContent = '🎬 자동 데모';
+            document.querySelector('.simulation-area').classList.remove('demo-mode');
+            
+            if (demoInterval) {
+                clearInterval(demoInterval);
+            }
+        }
+
+        function resetSimulation() {
+            stopDemo();
+            forceSlider.value = 0;
+            updateForceDisplay(0);
+            updateMotorUnits(0);
+        }
+
+        function toggleInfo() {
+            const infoPanel = document.getElementById('infoPanel');
+            const isVisible = infoPanel.style.display !== 'none';
+            infoPanel.style.display = isVisible ? 'none' : 'block';
+            
+            const btn = document.querySelector('.btn-info');
+            btn.textContent = isVisible ? '📚 정보' : '✖️ 닫기';
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    runDemo();
+                    break;
+                case 'r':
+                case 'R':
+                    resetSimulation();
+                    break;
+                case 'i':
+                case 'I':
+                    toggleInfo();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    forceSlider.value = Math.min(100, parseInt(forceSlider.value) + 10);
+                    updateForceDisplay(parseInt(forceSlider.value));
+                    updateMotorUnits(parseInt(forceSlider.value));
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    forceSlider.value = Math.max(0, parseInt(forceSlider.value) - 10);
+                    updateForceDisplay(parseInt(forceSlider.value));
+                    updateMotorUnits(parseInt(forceSlider.value));
+                    break;
+            }
+        });
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Motor Unit Recruitment 시뮬레이션이 준비되었습니다!');
+            console.log('조작법:');
+            console.log('- 슬라이더: 목표 근력 조절');
+            console.log('- Space: 자동 데모 시작/중지');
+            console.log('- R: 초기화');
+            console.log('- I: 정보 패널 열기/닫기');
+            console.log('- ↑/↓: 근력 10% 단위 조절');
+            
+            updateForceDisplay(0);
+            updateMotorUnits(0);
+        });
+    </script>
+</body>
+</html>

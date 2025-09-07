@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고급 nAChR 마비제 작용 메커니즘 시뮬레이션</title>
+    <link rel="stylesheet" href="styles/modern-scientific-design.css">
+    <link rel="stylesheet" href="components/accessibility-enhancements.css">
+    <style>
+        /* Enhanced nAChR Simulation Specific Styles */
+        .simulation-workspace {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-8);
+            margin-bottom: var(--space-12);
+        }
+
+        .main-simulation-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-2xl);
+            backdrop-filter: var(--glass-backdrop);
+            padding: var(--space-8);
+            position: relative;
+            overflow: hidden;
+            min-height: 700px;
+        }
+
+        .control-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-2xl);
+            backdrop-filter: var(--glass-backdrop);
+            padding: var(--space-8);
+            position: relative;
+        }
+
+        /* Enhanced NMJ Structure */
+        .nmj-advanced {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            margin: var(--space-6) 0;
+            background: 
+                radial-gradient(ellipse at center, rgba(30, 58, 95, 0.1) 0%, transparent 70%),
+                linear-gradient(135deg, var(--neutral-50) 0%, rgba(44, 90, 160, 0.05) 100%);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+        }
+
+        /* Advanced Presynaptic Terminal */
+        .presynaptic-terminal-advanced {
+            position: absolute;
+            top: 80px;
+            left: 200px;
+            width: 150px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            border-radius: var(--radius-xl);
+            z-index: 2;
+            box-shadow: 
+                0 10px 20px rgba(30, 58, 95, 0.3),
+                inset 0 1px 4px rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Enhanced Synaptic Vesicles */
+        .vesicle-advanced {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, var(--accent-energy), rgba(255, 190, 11, 0.8));
+            border-radius: var(--radius-full);
+            z-index: 3;
+            box-shadow: 
+                0 4px 8px rgba(255, 214, 10, 0.4),
+                inset 0 1px 2px rgba(255, 255, 255, 0.3);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: vesicle-float 4s ease-in-out infinite;
+        }
+
+        @keyframes vesicle-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(180deg); }
+        }
+
+        .vesicle1 { top: 90px; left: 210px; animation-delay: 0s; }
+        .vesicle2 { top: 110px; left: 220px; animation-delay: 0.5s; }
+        .vesicle3 { top: 100px; left: 240px; animation-delay: 1s; }
+        .vesicle4 { top: 120px; left: 250px; animation-delay: 1.5s; }
+        .vesicle5 { top: 90px; left: 270px; animation-delay: 2s; }
+        .vesicle6 { top: 110px; left: 280px; animation-delay: 2.5s; }
+        .vesicle7 { top: 100px; left: 300px; animation-delay: 3s; }
+        .vesicle8 { top: 120px; left: 310px; animation-delay: 3.5s; }
+
+        /* Enhanced Synaptic Cleft */
+        .synaptic-cleft-advanced {
+            position: absolute;
+            top: 190px;
+            left: 150px;
+            width: 250px;
+            height: 40px;
+            background: rgba(13, 202, 240, 0.1);
+            border: 2px solid var(--secondary-teal);
+            border-radius: var(--radius-lg);
+            z-index: 1;
+            backdrop-filter: blur(5px);
+            box-shadow: 
+                0 0 20px rgba(13, 202, 240, 0.3),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .synaptic-cleft-advanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(13, 202, 240, 0.3), transparent);
+            animation: synapse-flow 3s linear infinite;
+        }
+
+        @keyframes synapse-flow {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Enhanced Motor Endplate */
+        .motor-endplate-advanced {
+            position: absolute;
+            top: 240px;
+            left: 150px;
+            width: 250px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-success), rgba(32, 201, 151, 0.8));
+            border-radius: var(--radius-xl);
+            z-index: 2;
+            box-shadow: 
+                0 8px 16px rgba(40, 167, 69, 0.3),
+                inset 0 1px 4px rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Enhanced nAChRs */
+        .nachr-advanced {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: radial-gradient(circle, var(--viz-red), rgba(230, 57, 70, 0.8));
+            border-radius: var(--radius-full);
+            z-index: 4;
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+            cursor: pointer;
+            box-shadow: 
+                0 4px 8px rgba(230, 57, 70, 0.3),
+                inset 0 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .nachr-advanced:hover {
+            transform: scale(1.2);
+            box-shadow: 0 8px 16px rgba(230, 57, 70, 0.5);
+        }
+
+        /* Enhanced Molecules */
+        .molecule-advanced {
+            position: absolute;
+            border-radius: var(--radius-full);
+            z-index: 5;
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .ach-advanced {
+            width: 14px;
+            height: 14px;
+            background: radial-gradient(circle, var(--accent-energy), rgba(255, 190, 11, 0.8));
+            font-size: 7px;
+            color: var(--neutral-900);
+            box-shadow: 0 0 15px rgba(255, 214, 10, 0.5);
+        }
+
+        .succinylcholine-advanced {
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, var(--accent-orange), rgba(230, 57, 70, 0.8));
+            font-size: 8px;
+            box-shadow: 0 0 15px rgba(253, 126, 20, 0.5);
+        }
+
+        .curare-advanced {
+            width: 18px;
+            height: 18px;
+            background: radial-gradient(circle, var(--secondary-purple), rgba(142, 68, 173, 0.8));
+            font-size: 8px;
+            box-shadow: 0 0 15px rgba(111, 66, 193, 0.5);
+        }
+
+        .bungarotoxin-advanced {
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle, var(--accent-error), rgba(114, 28, 36, 0.8));
+            font-size: 7px;
+            box-shadow: 0 0 15px rgba(220, 53, 69, 0.6);
+        }
+
+        .physostigmine-advanced {
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, var(--secondary-teal), rgba(0, 119, 182, 0.8));
+            font-size: 7px;
+            box-shadow: 0 0 15px rgba(13, 202, 240, 0.5);
+        }
+
+        .molecule-advanced.visible {
+            opacity: 1;
+            animation: molecular-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes molecular-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Enhanced AChE Enzymes */
+        .ache-advanced {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(135deg, var(--secondary-purple), rgba(155, 89, 182, 0.8));
+            border-radius: var(--radius-sm);
+            z-index: 4;
+            transition: all 1s ease;
+            font-family: var(--font-mono);
+            font-size: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 
+                0 3px 6px rgba(142, 68, 173, 0.3),
+                inset 0 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .ache-advanced:hover {
+            transform: scale(1.15);
+        }
+
+        /* Drug Control Buttons */
+        .drug-controls {
+            display: grid;
+            gap: var(--space-3);
+            margin-bottom: var(--space-6);
+        }
+
+        .drug-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-5);
+            font-family: var(--font-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            backdrop-filter: var(--glass-backdrop);
+            position: relative;
+            overflow: hidden;
+            color: var(--neutral-800);
+        }
+
+        .drug-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .drug-btn:hover::before {
+            left: 100%;
+        }
+
+        .drug-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .drug-btn.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        .btn-normal { border-left: 4px solid var(--accent-success); }
+        .btn-succinyl { border-left: 4px solid var(--accent-orange); }
+        .btn-curare { border-left: 4px solid var(--secondary-purple); }
+        .btn-bungarotoxin { border-left: 4px solid var(--accent-error); }
+        .btn-physostigmine { border-left: 4px solid var(--secondary-teal); }
+
+        /* Drug Information Panel */
+        .drug-info-panel {
+            background: var(--neuro-card);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            box-shadow: 
+                8px 8px 16px var(--neuro-dark),
+                -8px -8px 16px var(--neuro-light);
+        }
+
+        .drug-name-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: var(--space-3);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .drug-mechanism-text {
+            color: var(--neutral-700);
+            line-height: 1.6;
+            margin-bottom: var(--space-4);
+        }
+
+        /* Molecular Structure Display */
+        .molecular-structure-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            backdrop-filter: var(--glass-backdrop);
+            margin-bottom: var(--space-6);
+        }
+
+        .structure-display {
+            background: var(--neutral-100);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--neutral-700);
+            margin: var(--space-4) 0;
+            border: 2px dashed var(--neutral-300);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Status Display */
+        .status-display-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            text-align: center;
+            backdrop-filter: var(--glass-backdrop);
+            margin-bottom: var(--space-8);
+        }
+
+        .status-title-main {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--neutral-800);
+            margin-bottom: var(--space-4);
+        }
+
+        .status-description-main {
+            font-size: 1.1rem;
+            color: var(--neutral-600);
+            line-height: 1.6;
+        }
+
+        /* Enhanced Animation States */
+        .blocked-advanced {
+            animation: advanced-blockade 2s infinite;
+            border-color: var(--accent-error) !important;
+            border-width: 3px !important;
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.6);
+        }
+
+        .desensitized-advanced {
+            animation: advanced-desensitization 3s ease-in-out;
+            background: var(--neutral-700) !important;
+            box-shadow: 0 0 15px rgba(52, 58, 64, 0.5);
+        }
+
+        .inhibited-advanced {
+            animation: advanced-inhibition 2s ease-in-out;
+            opacity: 0.3;
+            filter: grayscale(50%);
+        }
+
+        .bound-advanced {
+            border-color: var(--accent-energy) !important;
+            border-width: 3px !important;
+            box-shadow: 0 0 20px rgba(255, 214, 10, 0.8);
+            animation: advanced-binding 1.5s ease-in-out infinite;
+        }
+
+        @keyframes advanced-blockade {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 20px rgba(220, 53, 69, 0.6); 
+            }
+            50% { 
+                transform: scale(1.15); 
+                box-shadow: 0 0 30px rgba(220, 53, 69, 0.9); 
+            }
+        }
+
+        @keyframes advanced-desensitization {
+            0% { 
+                background: var(--viz-red); 
+                transform: scale(1); 
+            }
+            50% { 
+                background: var(--neutral-500); 
+                transform: scale(0.9); 
+            }
+            100% { 
+                background: var(--neutral-700); 
+                transform: scale(0.8); 
+            }
+        }
+
+        @keyframes advanced-inhibition {
+            0%, 100% { opacity: 1; filter: grayscale(0%); }
+            50% { opacity: 0.3; filter: grayscale(80%); }
+        }
+
+        @keyframes advanced-binding {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(255, 214, 10, 0.8);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 35px rgba(255, 214, 10, 1);
+                transform: scale(1.1);
+            }
+        }
+
+        /* Enhanced Legend */
+        .legend-advanced {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--space-4);
+            margin-top: var(--space-8);
+            padding: var(--space-6);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            backdrop-filter: var(--glass-backdrop);
+        }
+
+        .legend-item-advanced {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            border-radius: var(--radius);
+            transition: all var(--transition);
+        }
+
+        .legend-item-advanced:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .legend-color-advanced {
+            width: 18px;
+            height: 18px;
+            border-radius: var(--radius-full);
+            box-shadow: var(--shadow);
+        }
+
+        .legend-label-advanced {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--neutral-700);
+        }
+
+        /* Mechanism Details Cards */
+        .mechanism-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--space-6);
+            margin-top: var(--space-8);
+        }
+
+        .mechanism-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            backdrop-filter: var(--glass-backdrop);
+            transition: all var(--transition);
+        }
+
+        .mechanism-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .card-title-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--neutral-800);
+        }
+
+        .card-content-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .card-content-list li {
+            padding: var(--space-2) 0;
+            color: var(--neutral-700);
+            line-height: 1.5;
+            position: relative;
+            padding-left: var(--space-6);
+        }
+
+        .card-content-list li::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: var(--primary-blue);
+            font-weight: 700;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .simulation-workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nmj-advanced {
+                transform: scale(0.8);
+                margin: var(--space-4) -10%;
+            }
+            
+            .mechanism-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip link for accessibility -->
+    <a href="#main-content" class="skip-link">메인 콘텐츠로 바로가기</a>
+
+    <div class="scientific-container">
+        <header class="text-center mb-12">
+            <h1 class="display-title">
+                🧬 고급 nAChR 마비제 작용 메커니즘 시뮬레이션
+            </h1>
+            <p class="subtitle">
+                Advanced Neuromuscular Blocking Agents Mechanism Simulation
+            </p>
+        </header>
+
+        <main id="main-content">
+            <div class="simulation-workspace">
+                <div class="main-simulation-panel animate-fade-in-up">
+                    <div class="nmj-advanced">
+                        <!-- Presynaptic Terminal -->
+                        <div class="presynaptic-terminal-advanced" 
+                             role="img" 
+                             aria-label="시냅스 전 말단">
+                        </div>
+                        
+                        <!-- Synaptic Vesicles -->
+                        <div class="vesicle-advanced vesicle1" aria-label="시냅스 소포 1"></div>
+                        <div class="vesicle-advanced vesicle2" aria-label="시냅스 소포 2"></div>
+                        <div class="vesicle-advanced vesicle3" aria-label="시냅스 소포 3"></div>
+                        <div class="vesicle-advanced vesicle4" aria-label="시냅스 소포 4"></div>
+                        <div class="vesicle-advanced vesicle5" aria-label="시냅스 소포 5"></div>
+                        <div class="vesicle-advanced vesicle6" aria-label="시냅스 소포 6"></div>
+                        <div class="vesicle-advanced vesicle7" aria-label="시냅스 소포 7"></div>
+                        <div class="vesicle-advanced vesicle8" aria-label="시냅스 소포 8"></div>
+                        
+                        <!-- Synaptic Cleft -->
+                        <div class="synaptic-cleft-advanced" 
+                             role="img" 
+                             aria-label="시냅스 간격">
+                        </div>
+                        
+                        <!-- Motor Endplate -->
+                        <div class="motor-endplate-advanced" 
+                             role="img" 
+                             aria-label="운동종판">
+                        </div>
+                        
+                        <!-- nAChRs -->
+                        <div class="nachr-advanced" id="nachr1" style="top: 235px; left: 160px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 1"></div>
+                        <div class="nachr-advanced" id="nachr2" style="top: 235px; left: 180px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 2"></div>
+                        <div class="nachr-advanced" id="nachr3" style="top: 235px; left: 200px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 3"></div>
+                        <div class="nachr-advanced" id="nachr4" style="top: 235px; left: 220px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 4"></div>
+                        <div class="nachr-advanced" id="nachr5" style="top: 235px; left: 240px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 5"></div>
+                        <div class="nachr-advanced" id="nachr6" style="top: 235px; left: 260px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 6"></div>
+                        <div class="nachr-advanced" id="nachr7" style="top: 235px; left: 280px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 7"></div>
+                        <div class="nachr-advanced" id="nachr8" style="top: 235px; left: 300px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 8"></div>
+                        <div class="nachr-advanced" id="nachr9" style="top: 235px; left: 320px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 9"></div>
+                        <div class="nachr-advanced" id="nachr10" style="top: 235px; left: 340px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 10"></div>
+
+                        <div class="nachr-advanced" id="nachr11" style="top: 255px; left: 170px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 11"></div>
+                        <div class="nachr-advanced" id="nachr12" style="top: 255px; left: 190px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 12"></div>
+                        <div class="nachr-advanced" id="nachr13" style="top: 255px; left: 210px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 13"></div>
+                        <div class="nachr-advanced" id="nachr14" style="top: 255px; left: 230px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 14"></div>
+                        <div class="nachr-advanced" id="nachr15" style="top: 255px; left: 250px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 15"></div>
+                        <div class="nachr-advanced" id="nachr16" style="top: 255px; left: 270px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 16"></div>
+                        <div class="nachr-advanced" id="nachr17" style="top: 255px; left: 290px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 17"></div>
+                        <div class="nachr-advanced" id="nachr18" style="top: 255px; left: 310px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 18"></div>
+                        <div class="nachr-advanced" id="nachr19" style="top: 255px; left: 330px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 19"></div>
+                        <div class="nachr-advanced" id="nachr20" style="top: 255px; left: 350px;" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="니코틴성 아세틸콜린 수용체 20"></div>
+                        
+                        <!-- ACh molecules -->
+                        <div class="molecule-advanced ach-advanced" id="ach1" style="top: 205px; left: 170px;">A</div>
+                        <div class="molecule-advanced ach-advanced" id="ach2" style="top: 210px; left: 190px;">A</div>
+                        <div class="molecule-advanced ach-advanced" id="ach3" style="top: 205px; left: 210px;">A</div>
+                        <div class="molecule-advanced ach-advanced" id="ach4" style="top: 210px; left: 230px;">A</div>
+                        <div class="molecule-advanced ach-advanced" id="ach5" style="top: 205px; left: 250px;">A</div>
+                        <div class="molecule-advanced ach-advanced" id="ach6" style="top: 210px; left: 270px;">A</div>
+                        <div class="molecule-advanced ach-advanced" id="ach7" style="top: 205px; left: 290px;">A</div>
+                        <div class="molecule-advanced ach-advanced" id="ach8" style="top: 210px; left: 310px;">A</div>
+                        <div class="molecule-advanced ach-advanced" id="ach9" style="top: 205px; left: 330px;">A</div>
+                        <div class="molecule-advanced ach-advanced" id="ach10" style="top: 210px; left: 350px;">A</div>
+                        
+                        <!-- Drug molecules -->
+                        <!-- Succinylcholine -->
+                        <div class="molecule-advanced succinylcholine-advanced" id="succinyl1" style="top: 205px; left: 180px;">S</div>
+                        <div class="molecule-advanced succinylcholine-advanced" id="succinyl2" style="top: 210px; left: 220px;">S</div>
+                        <div class="molecule-advanced succinylcholine-advanced" id="succinyl3" style="top: 205px; left: 260px;">S</div>
+                        <div class="molecule-advanced succinylcholine-advanced" id="succinyl4" style="top: 210px; left: 300px;">S</div>
+                        <div class="molecule-advanced succinylcholine-advanced" id="succinyl5" style="top: 205px; left: 340px;">S</div>
+                        
+                        <!-- Curare -->
+                        <div class="molecule-advanced curare-advanced" id="curare1" style="top: 205px; left: 175px;">C</div>
+                        <div class="molecule-advanced curare-advanced" id="curare2" style="top: 210px; left: 215px;">C</div>
+                        <div class="molecule-advanced curare-advanced" id="curare3" style="top: 205px; left: 255px;">C</div>
+                        <div class="molecule-advanced curare-advanced" id="curare4" style="top: 210px; left: 295px;">C</div>
+                        <div class="molecule-advanced curare-advanced" id="curare5" style="top: 205px; left: 335px;">C</div>
+                        
+                        <!-- Bungarotoxin -->
+                        <div class="molecule-advanced bungarotoxin-advanced" id="bungar1" style="top: 205px; left: 185px;">B</div>
+                        <div class="molecule-advanced bungarotoxin-advanced" id="bungar2" style="top: 210px; left: 225px;">B</div>
+                        <div class="molecule-advanced bungarotoxin-advanced" id="bungar3" style="top: 205px; left: 265px;">B</div>
+                        <div class="molecule-advanced bungarotoxin-advanced" id="bungar4" style="top: 210px; left: 305px;">B</div>
+                        <div class="molecule-advanced bungarotoxin-advanced" id="bungar5" style="top: 205px; left: 345px;">B</div>
+                        
+                        <!-- Physostigmine -->
+                        <div class="molecule-advanced physostigmine-advanced" id="physo1" style="top: 200px; left: 165px;">P</div>
+                        <div class="molecule-advanced physostigmine-advanced" id="physo2" style="top: 205px; left: 185px;">P</div>
+                        <div class="molecule-advanced physostigmine-advanced" id="physo3" style="top: 200px; left: 205px;">P</div>
+                        <div class="molecule-advanced physostigmine-advanced" id="physo4" style="top: 205px; left: 225px;">P</div>
+                        <div class="molecule-advanced physostigmine-advanced" id="physo5" style="top: 200px; left: 245px;">P</div>
+                        <div class="molecule-advanced physostigmine-advanced" id="physo6" style="top: 205px; left: 265px;">P</div>
+                        <div class="molecule-advanced physostigmine-advanced" id="physo7" style="top: 200px; left: 285px;">P</div>
+                        <div class="molecule-advanced physostigmine-advanced" id="physo8" style="top: 205px; left: 305px;">P</div>
+                        <div class="molecule-advanced physostigmine-advanced" id="physo9" style="top: 200px; left: 325px;">P</div>
+                        <div class="molecule-advanced physostigmine-advanced" id="physo10" style="top: 205px; left: 345px;">P</div>
+                        
+                        <!-- AChE enzymes -->
+                        <div class="ache-advanced" id="ache1" style="top: 200px; left: 165px;">E</div>
+                        <div class="ache-advanced" id="ache2" style="top: 205px; left: 185px;">E</div>
+                        <div class="ache-advanced" id="ache3" style="top: 200px; left: 205px;">E</div>
+                        <div class="ache-advanced" id="ache4" style="top: 205px; left: 225px;">E</div>
+                        <div class="ache-advanced" id="ache5" style="top: 200px; left: 245px;">E</div>
+                        <div class="ache-advanced" id="ache6" style="top: 205px; left: 265px;">E</div>
+                        <div class="ache-advanced" id="ache7" style="top: 200px; left: 285px;">E</div>
+                        <div class="ache-advanced" id="ache8" style="top: 205px; left: 305px;">E</div>
+                        <div class="ache-advanced" id="ache9" style="top: 200px; left: 325px;">E</div>
+                        <div class="ache-advanced" id="ache10" style="top: 205px; left: 345px;">E</div>
+                    </div>
+                </div>
+
+                <div class="control-panel animate-slide-in-right">
+                    <div class="drug-controls">
+                        <button class="drug-btn btn-normal active" 
+                                onclick="showNormal()"
+                                aria-label="정상 신호전달 시뮬레이션">
+                            🟢 정상 신호전달
+                        </button>
+                        <button class="drug-btn btn-succinyl" 
+                                onclick="showSuccinylcholine()"
+                                aria-label="석시닐콜린 작용 시뮬레이션">
+                            🔴 Succinylcholine
+                        </button>
+                        <button class="drug-btn btn-curare" 
+                                onclick="showCurare()"
+                                aria-label="쿠라레 작용 시뮬레이션">
+                            🟣 Curare
+                        </button>
+                        <button class="drug-btn btn-bungarotoxin" 
+                                onclick="showBungarotoxin()"
+                                aria-label="알파 분가로톡신 작용 시뮬레이션">
+                            🔴 α-Bungarotoxin
+                        </button>
+                        <button class="drug-btn btn-physostigmine" 
+                                onclick="showPhysostigmine()"
+                                aria-label="피조스티그민 작용 시뮬레이션">
+                            🔵 Physostigmine
+                        </button>
+                        <button class="drug-btn" 
+                                onclick="resetSimulation()"
+                                aria-label="시뮬레이션 초기화">
+                            ↺ 초기화
+                        </button>
+                    </div>
+
+                    <div class="drug-info-panel">
+                        <div class="drug-name-title" id="drugName">
+                            🟢 정상 신호전달
+                        </div>
+                        <div class="drug-mechanism-text" id="drugMechanism">
+                            ACh가 nAChR에 결합하여 Na⁺ 채널을 개방하고 근육 수축을 유발합니다.
+                        </div>
+                    </div>
+
+                    <div class="molecular-structure-panel">
+                        <h3 class="section-title" style="font-size: 1.1rem; margin-bottom: var(--space-4);" id="structureTitle">
+                            분자 구조
+                        </h3>
+                        <div class="structure-display" id="structureDisplay">
+                            CH₃-CO-O-CH₂-CH₂-N⁺(CH₃)₃
+                        </div>
+                        <div style="font-size: 0.9em; color: var(--neutral-600); text-align: center;" id="structureDescription">
+                            아세틸콜린의 정상적인 구조와 기능
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-display-panel">
+                <div class="status-title-main" id="statusTitle">
+                    nAChR 신호전달 메커니즘
+                </div>
+                <div class="status-description-main" id="statusDescription">
+                    다양한 마비제와 차단제가 신경근접합부에서 어떻게 작용하는지 관찰하세요.
+                </div>
+            </div>
+
+            <div class="mechanism-cards">
+                <div class="mechanism-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: linear-gradient(135deg, var(--accent-orange), var(--accent-error));">
+                            🔴
+                        </div>
+                        <h3 class="card-title-text">Succinylcholine</h3>
+                    </div>
+                    <ul class="card-content-list">
+                        <li>두 개의 연결된 ACh 분자 구조</li>
+                        <li>nAChR에 빠르게 결합하여 초기 수축 유발</li>
+                        <li>AChE에 저항성 - 지속적 자극</li>
+                        <li>수용체 탈감작(desensitization) 유발</li>
+                        <li>Na⁺ 채널 비활성화로 마비 진행</li>
+                        <li>빠른 작용 개시, 중간 지속시간</li>
+                    </ul>
+                </div>
+                
+                <div class="mechanism-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: linear-gradient(135deg, var(--secondary-purple), rgba(142, 68, 173, 0.8));">
+                            🟣
+                        </div>
+                        <h3 class="card-title-text">Curare</h3>
+                    </div>
+                    <ul class="card-content-list">
+                        <li>경쟁적 nAChR 길항제</li>
+                        <li>ACh와 경쟁적으로 수용체 결합</li>
+                        <li>수용체 활성화 없이 차단</li>
+                        <li>가역적 결합 - 농도 의존적</li>
+                        <li>근육 이완제로 마취에 사용</li>
+                        <li>호흡근 마비 위험성</li>
+                    </ul>
+                </div>
+                
+                <div class="mechanism-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: linear-gradient(135deg, var(--accent-error), rgba(114, 28, 36, 0.8));">
+                            🔴
+                        </div>
+                        <h3 class="card-title-text">α-Bungarotoxin</h3>
+                    </div>
+                    <ul class="card-content-list">
+                        <li>코브라 독의 주요 성분</li>
+                        <li>nAChR에 비가역적 결합</li>
+                        <li>극도로 강한 친화도</li>
+                        <li>ACh 결합부위 영구 차단</li>
+                        <li>연구용 nAChR 표지자로 사용</li>
+                        <li>치명적 호흡마비 유발</li>
+                    </ul>
+                </div>
+                
+                <div class="mechanism-card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: linear-gradient(135deg, var(--secondary-teal), rgba(0, 119, 182, 0.8));">
+                            🔵
+                        </div>
+                        <h3 class="card-title-text">Physostigmine</h3>
+                    </div>
+                    <ul class="card-content-list">
+                        <li>AChE 활성의 가역적 억제제</li>
+                        <li>시냅스 ACh 농도 증가</li>
+                        <li>과도한 수용체 자극</li>
+                        <li>근육 강직과 경련 유발</li>
+                        <li>중추신경계 침투 가능</li>
+                        <li>항콜린제 중독 치료에도 사용</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="legend-advanced">
+                <div class="legend-item-advanced">
+                    <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--viz-red), rgba(230, 57, 70, 0.8));"></div>
+                    <span class="legend-label-advanced">nAChR</span>
+                </div>
+                <div class="legend-item-advanced">
+                    <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--accent-energy), rgba(255, 190, 11, 0.8));"></div>
+                    <span class="legend-label-advanced">ACh</span>
+                </div>
+                <div class="legend-item-advanced">
+                    <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--accent-orange), rgba(230, 57, 70, 0.8));"></div>
+                    <span class="legend-label-advanced">Succinylcholine</span>
+                </div>
+                <div class="legend-item-advanced">
+                    <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--secondary-purple), rgba(142, 68, 173, 0.8));"></div>
+                    <span class="legend-label-advanced">Curare</span>
+                </div>
+                <div class="legend-item-advanced">
+                    <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--accent-error), rgba(114, 28, 36, 0.8));"></div>
+                    <span class="legend-label-advanced">α-Bungarotoxin</span>
+                </div>
+                <div class="legend-item-advanced">
+                    <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--secondary-teal), rgba(0, 119, 182, 0.8));"></div>
+                    <span class="legend-label-advanced">Physostigmine</span>
+                </div>
+                <div class="legend-item-advanced">
+                    <div class="legend-color-advanced" style="background: linear-gradient(135deg, var(--secondary-purple), rgba(155, 89, 182, 0.8));"></div>
+                    <span class="legend-label-advanced">AChE</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Accessibility controls -->
+    <div class="text-size-control no-print">
+        <button class="text-size-btn" data-size="small" aria-label="글자 크기 작게">A-</button>
+        <button class="text-size-btn" data-size="medium" aria-label="글자 크기 보통">A</button>
+        <button class="text-size-btn" data-size="large" aria-label="글자 크기 크게">A+</button>
+    </div>
+
+    <button class="contrast-toggle no-print" onclick="toggleHighContrast()" aria-label="고대비 모드 토글">
+        🎨 고대비
+    </button>
+
+    <!-- Live region for screen readers -->
+    <div aria-live="polite" aria-atomic="true" class="sr-only" id="liveRegion"></div>
+
+    <!-- Keyboard navigation hints -->
+    <div class="keyboard-nav-hint no-print" id="keyboardHint">
+        키보드 단축키: 1-5 (약물 선택), R (리셋), Tab (탐색)
+    </div>
+
+    <script src="components/advanced-data-visualization.js"></script>
+    <script>
+        let currentMode = 'normal';
+        let announceTimer;
+
+        // Accessibility functions
+        function announceToScreenReader(message) {
+            const liveRegion = document.getElementById('liveRegion');
+            liveRegion.textContent = message;
+            
+            // Clear after announcement
+            clearTimeout(announceTimer);
+            announceTimer = setTimeout(() => {
+                liveRegion.textContent = '';
+            }, 3000);
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            const isHighContrast = document.body.classList.contains('high-contrast');
+            localStorage.setItem('highContrast', isHighContrast);
+            
+            announceToScreenReader(
+                isHighContrast ? '고대비 모드가 활성화되었습니다' : '고대비 모드가 비활성화되었습니다'
+            );
+        }
+
+        function resetAllStates() {
+            // 모든 분자와 효소 숨기기
+            const molecules = document.querySelectorAll('.molecule-advanced');
+            molecules.forEach(mol => {
+                mol.classList.remove('visible');
+                setTimeout(() => mol.style.opacity = '0', 10);
+            });
+            
+            // 모든 수용체 상태 초기화
+            const receptors = document.querySelectorAll('.nachr-advanced');
+            receptors.forEach(receptor => {
+                receptor.classList.remove('blocked-advanced', 'desensitized-advanced', 'bound-advanced', 'inhibited-advanced');
+                receptor.style.background = 'radial-gradient(circle, var(--viz-red), rgba(230, 57, 70, 0.8))';
+                receptor.style.borderColor = 'transparent';
+                receptor.style.borderWidth = '2px';
+                receptor.style.animation = '';
+            });
+            
+            // AChE 효소 상태 초기화
+            const enzymes = document.querySelectorAll('.ache-advanced');
+            enzymes.forEach(enzyme => {
+                enzyme.classList.remove('inhibited-advanced');
+                enzyme.style.opacity = '1';
+                enzyme.style.filter = '';
+            });
+            
+            // 버튼 상태 초기화
+            document.querySelectorAll('.drug-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+        
+        function updateInfo(name, mechanism, structureTitle, structureDesc, structureContent) {
+            document.getElementById('drugName').innerHTML = name;
+            document.getElementById('drugMechanism').textContent = mechanism;
+            document.getElementById('structureTitle').textContent = structureTitle;
+            document.getElementById('structureDescription').textContent = structureDesc;
+            document.getElementById('structureDisplay').innerHTML = structureContent;
+        }
+        
+        function updateStatus(title, description) {
+            document.getElementById('statusTitle').textContent = title;
+            document.getElementById('statusDescription').textContent = description;
+        }
+        
+        function showNormal() {
+            resetAllStates();
+            currentMode = 'normal';
+            
+            // Activate button
+            document.querySelector('.btn-normal').classList.add('active');
+            
+            updateInfo(
+                '🟢 정상 신호전달',
+                'ACh가 nAChR에 결합하여 Na⁺ 채널을 개방하고 근육 수축을 유발합니다.',
+                'Acetylcholine 분자구조',
+                '정상적인 신경전달물질 ACh의 구조와 기능',
+                'CH₃-CO-O-CH₂-CH₂-N⁺(CH₃)₃'
+            );
+            
+            updateStatus(
+                '정상 신호전달 (Normal Neurotransmission)',
+                'ACh가 방출되어 nAChR에 결합하고, AChE에 의해 분해되어 신호가 종료됩니다.'
+            );
+            
+            announceToScreenReader('정상 신호전달 시뮬레이션이 시작되었습니다. ACh 분자들이 수용체에 결합하고 있습니다.');
+            
+            // ACh 분자 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 10; i++) {
+                    setTimeout(() => {
+                        const ach = document.getElementById(`ach${i}`);
+                        if (ach) {
+                            ach.classList.add('visible');
+                            ach.style.opacity = '1';
+                        }
+                    }, i * 100);
+                }
+            }, 500);
+            
+            // nAChR 결합
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr-advanced');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('bound-advanced');
+                    }, index * 50);
+                });
+                
+                announceToScreenReader('아세틸콜린이 수용체에 성공적으로 결합되었습니다.');
+            }, 1500);
+        }
+        
+        function showSuccinylcholine() {
+            resetAllStates();
+            currentMode = 'succinylcholine';
+            
+            // Activate button
+            document.querySelector('.btn-succinyl').classList.add('active');
+            
+            updateInfo(
+                '🔴 Succinylcholine (석시닐콜린)',
+                '두 개의 연결된 ACh 분자로 구성. 초기 수축 후 수용체 탈감작을 유발하여 마비를 일으킵니다.',
+                'Succinylcholine 분자구조',
+                '두 개의 ACh가 연결된 구조 - 지속적 자극 후 탈감작',
+                'ACh-CH₂-CH₂-ACh<br><small>(Bis-acetylcholine)</small>'
+            );
+            
+            updateStatus(
+                'Succinylcholine 작용 (Depolarizing Block)',
+                '초기 근육 수축(fasciculation) 후 수용체 탈감작으로 인한 이완성 마비가 발생합니다.'
+            );
+            
+            announceToScreenReader('석시닐콜린 시뮬레이션이 시작되었습니다. 초기 수축 후 수용체 탈감작이 일어납니다.');
+            
+            // Succinylcholine 분자 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 5; i++) {
+                    setTimeout(() => {
+                        const succinyl = document.getElementById(`succinyl${i}`);
+                        if (succinyl) {
+                            succinyl.classList.add('visible');
+                            succinyl.style.opacity = '1';
+                        }
+                    }, i * 150);
+                }
+            }, 500);
+            
+            // 초기 수용체 활성화
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr-advanced');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('bound-advanced');
+                    }, index * 30);
+                });
+                
+                announceToScreenReader('석시닐콜린이 수용체에 결합하여 초기 활성화가 일어났습니다.');
+            }, 1500);
+            
+            // 수용체 탈감작
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr-advanced');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.remove('bound-advanced');
+                        receptor.classList.add('desensitized-advanced');
+                    }, index * 50);
+                });
+                
+                announceToScreenReader('수용체 탈감작이 발생하여 신호 전달이 차단되었습니다.');
+            }, 3000);
+        }
+        
+        function showCurare() {
+            resetAllStates();
+            currentMode = 'curare';
+            
+            // Activate button
+            document.querySelector('.btn-curare').classList.add('active');
+            
+            updateInfo(
+                '🟣 Curare (d-tubocurarine)',
+                '경쟁적 nAChR 길항제로 ACh와 경쟁하여 수용체에 결합하지만 활성화시키지 않습니다.',
+                'Curare 분자구조',
+                '경쟁적 길항제 - 수용체 차단 without 활성화',
+                'Quaternary ammonium<br><small>alkaloid</small>'
+            );
+            
+            updateStatus(
+                'Curare 작용 (Competitive Block)',
+                '비탈분극성 차단제로 수용체를 차단하여 근육 이완을 유발합니다.'
+            );
+            
+            announceToScreenReader('쿠라레 시뮬레이션이 시작되었습니다. 경쟁적 길항작용으로 수용체를 차단합니다.');
+            
+            // Curare 분자 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 5; i++) {
+                    setTimeout(() => {
+                        const curare = document.getElementById(`curare${i}`);
+                        if (curare) {
+                            curare.classList.add('visible');
+                            curare.style.opacity = '1';
+                        }
+                    }, i * 150);
+                }
+            }, 500);
+            
+            // 수용체 차단
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr-advanced');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('blocked-advanced');
+                    }, index * 50);
+                });
+                
+                announceToScreenReader('쿠라레가 수용체를 차단하여 아세틸콜린의 결합을 방해하고 있습니다.');
+            }, 1500);
+            
+            // ACh 무효화 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 10; i++) {
+                    setTimeout(() => {
+                        const ach = document.getElementById(`ach${i}`);
+                        if (ach) {
+                            ach.style.opacity = '0.3';
+                            ach.style.animation = 'molecular-pulse 2s ease-in-out infinite';
+                        }
+                    }, i * 100);
+                }
+                
+                announceToScreenReader('아세틸콜린이 수용체에 결합하지 못하고 있습니다.');
+            }, 2500);
+        }
+        
+        function showBungarotoxin() {
+            resetAllStates();
+            currentMode = 'bungarotoxin';
+            
+            // Activate button
+            document.querySelector('.btn-bungarotoxin').classList.add('active');
+            
+            updateInfo(
+                '🔴 α-Bungarotoxin (알파 분가로톡신)',
+                '코브라 독 성분으로 nAChR에 비가역적으로 결합하여 영구적 차단을 유발합니다.',
+                'α-Bungarotoxin 구조',
+                '비가역적 길항제 - 영구적 수용체 차단',
+                'Snake venom neurotoxin<br><small>(74 amino acids)</small>'
+            );
+            
+            updateStatus(
+                'α-Bungarotoxin 작용 (Irreversible Block)',
+                '비가역적 수용체 차단으로 인한 영구적 마비와 호흡정지를 유발합니다.'
+            );
+            
+            announceToScreenReader('알파 분가로톡신 시뮬레이션이 시작되었습니다. 비가역적 수용체 차단이 진행됩니다.');
+            
+            // Bungarotoxin 분자 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 5; i++) {
+                    setTimeout(() => {
+                        const bungar = document.getElementById(`bungar${i}`);
+                        if (bungar) {
+                            bungar.classList.add('visible');
+                            bungar.style.opacity = '1';
+                        }
+                    }, i * 200);
+                }
+            }, 500);
+            
+            // 강력한 수용체 차단
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr-advanced');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('blocked-advanced');
+                        receptor.style.background = 'radial-gradient(circle, #721c24, #5a161b)';
+                        receptor.style.borderColor = 'var(--accent-error)';
+                    }, index * 30);
+                });
+                
+                announceToScreenReader('알파 분가로톡신이 수용체를 비가역적으로 차단했습니다. 매우 위험한 상태입니다.');
+            }, 1500);
+            
+            // ACh 완전 무효화
+            setTimeout(() => {
+                for (let i = 1; i <= 10; i++) {
+                    const ach = document.getElementById(`ach${i}`);
+                    if (ach) {
+                        ach.style.opacity = '0.1';
+                    }
+                }
+                
+                announceToScreenReader('아세틸콜린이 완전히 무력화되었습니다.');
+            }, 2500);
+        }
+        
+        function showPhysostigmine() {
+            resetAllStates();
+            currentMode = 'physostigmine';
+            
+            // Activate button
+            document.querySelector('.btn-physostigmine').classList.add('active');
+            
+            updateInfo(
+                '🔵 Physostigmine (피조스티그민)',
+                'AChE를 가역적으로 억제하여 시냅스 ACh 농도를 증가시키고 과도한 수용체 자극을 유발합니다.',
+                'Physostigmine 분자구조',
+                'AChE 억제제 - 과도한 ACh 축적',
+                'Carbamate<br><small>cholinesterase inhibitor</small>'
+            );
+            
+            updateStatus(
+                'Physostigmine 작용 (AChE Inhibition)',
+                'AChE 억제로 인한 ACh 축적이 과도한 수용체 자극과 근육 강직을 유발합니다.'
+            );
+            
+            announceToScreenReader('피조스티그민 시뮬레이션이 시작되었습니다. 아세틸콜린 분해효소가 억제됩니다.');
+            
+            // AChE 억제제 표시
+            setTimeout(() => {
+                for (let i = 1; i <= 10; i++) {
+                    setTimeout(() => {
+                        const physo = document.getElementById(`physo${i}`);
+                        if (physo) {
+                            physo.classList.add('visible');
+                            physo.style.opacity = '1';
+                        }
+                    }, i * 100);
+                }
+            }, 500);
+            
+            // AChE 억제
+            setTimeout(() => {
+                const enzymes = document.querySelectorAll('.ache-advanced');
+                enzymes.forEach((enzyme, index) => {
+                    setTimeout(() => {
+                        enzyme.classList.add('inhibited-advanced');
+                    }, index * 50);
+                });
+                
+                announceToScreenReader('아세틸콜린 분해효소가 억제되었습니다.');
+            }, 1000);
+            
+            // ACh 축적
+            setTimeout(() => {
+                for (let i = 1; i <= 10; i++) {
+                    setTimeout(() => {
+                        const ach = document.getElementById(`ach${i}`);
+                        if (ach) {
+                            ach.classList.add('visible');
+                            ach.style.opacity = '1';
+                            ach.style.animation = 'molecular-pulse 1s ease-in-out infinite';
+                        }
+                    }, i * 50);
+                }
+                
+                announceToScreenReader('아세틸콜린이 축적되고 있습니다.');
+            }, 1500);
+            
+            // 과도한 수용체 자극
+            setTimeout(() => {
+                const receptors = document.querySelectorAll('.nachr-advanced');
+                receptors.forEach((receptor, index) => {
+                    setTimeout(() => {
+                        receptor.classList.add('bound-advanced');
+                        receptor.style.animation = 'advanced-binding 0.5s ease-in-out infinite';
+                        receptor.style.borderColor = 'var(--accent-energy)';
+                    }, index * 20);
+                });
+                
+                announceToScreenReader('과도한 수용체 자극으로 인해 근육 강직이 발생할 수 있습니다.');
+            }, 2000);
+        }
+        
+        function resetSimulation() {
+            resetAllStates();
+            currentMode = 'normal';
+            showNormal();
+            
+            announceToScreenReader('시뮬레이션이 초기화되었습니다.');
+        }
+
+        // Text size control
+        document.querySelectorAll('.text-size-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const size = this.dataset.size;
+                document.body.className = document.body.className.replace(/text-\w+/g, '');
+                document.body.classList.add(`text-${size}`);
+                
+                localStorage.setItem('textSize', size);
+                announceToScreenReader(`글자 크기가 ${size}로 변경되었습니다.`);
+            });
+        });
+
+        // Show keyboard hints temporarily
+        function showKeyboardHints() {
+            const hint = document.getElementById('keyboardHint');
+            hint.classList.add('show');
+            setTimeout(() => {
+                hint.classList.remove('show');
+            }, 3000);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            // Show hints on first Tab
+            if (e.key === 'Tab') {
+                showKeyboardHints();
+            }
+
+            switch(e.key.toLowerCase()) {
+                case '1': 
+                    e.preventDefault();
+                    showNormal(); 
+                    break;
+                case '2': 
+                    e.preventDefault();
+                    showSuccinylcholine(); 
+                    break;
+                case '3': 
+                    e.preventDefault();
+                    showCurare(); 
+                    break;
+                case '4': 
+                    e.preventDefault();
+                    showBungarotoxin(); 
+                    break;
+                case '5': 
+                    e.preventDefault();
+                    showPhysostigmine(); 
+                    break;
+                case 'r': 
+                    e.preventDefault();
+                    resetSimulation(); 
+                    break;
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Restore user preferences
+            const savedTextSize = localStorage.getItem('textSize');
+            if (savedTextSize) {
+                document.body.classList.add(`text-${savedTextSize}`);
+            }
+
+            const savedHighContrast = localStorage.getItem('highContrast');
+            if (savedHighContrast === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+
+            // Initialize simulation
+            showNormal();
+            
+            // Add click interactions for accessibility
+            document.querySelectorAll('.nachr-advanced, .molecule-advanced, .ache-advanced').forEach(element => {
+                element.addEventListener('click', function() {
+                    const type = this.classList.contains('nachr-advanced') ? '수용체' :
+                                this.classList.contains('ache-advanced') ? '분해효소' : '분자';
+                    announceToScreenReader(`${type}가 선택되었습니다.`);
+                });
+
+                // Add keyboard support
+                element.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+            
+            console.log('🧬 Enhanced nAChR 마비제 시뮬레이션이 준비되었습니다!');
+            console.log('키보드 단축키: 1(정상), 2(Succinyl), 3(Curare), 4(Bungarotoxin), 5(Physostigmine), R(리셋)');
+            console.log('접근성 기능: Tab(탐색), Enter/Space(선택), 고대비 모드, 글자 크기 조절');
+        });
+    </script>
+</body>
+</html>

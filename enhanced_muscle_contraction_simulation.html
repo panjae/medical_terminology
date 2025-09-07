@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고급 골격근 흥분-수축 연결 시뮬레이션</title>
+    <link rel="stylesheet" href="styles/modern-scientific-design.css">
+    <style>
+        /* Enhanced Muscle Simulation Specific Styles */
+        .simulation-workspace {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-8);
+            margin-bottom: var(--space-12);
+        }
+
+        .main-simulation-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-2xl);
+            backdrop-filter: var(--glass-backdrop);
+            padding: var(--space-8);
+            position: relative;
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        .control-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-2xl);
+            backdrop-filter: var(--glass-backdrop);
+            padding: var(--space-8);
+            position: relative;
+        }
+
+        /* Enhanced Muscle Fiber Visualization */
+        .muscle-fiber-advanced {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin: var(--space-6) 0;
+            background: 
+                radial-gradient(ellipse at center, rgba(76, 175, 80, 0.1) 0%, transparent 70%),
+                linear-gradient(135deg, var(--neutral-50) 0%, rgba(102, 126, 234, 0.05) 100%);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+        }
+
+        /* Advanced Sarcomere Visualization */
+        .sarcomere-advanced {
+            position: absolute;
+            top: 150px;
+            left: 50px;
+            width: 500px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Enhanced Actin Filaments */
+        .actin-filament-advanced {
+            position: absolute;
+            height: 8px;
+            background: linear-gradient(90deg, 
+                var(--accent-protein), 
+                rgba(78, 205, 196, 0.8), 
+                var(--accent-protein));
+            border-radius: var(--radius-full);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .actin-1 { top: 40px; left: 20px; width: 460px; }
+        .actin-2 { top: 80px; left: 20px; width: 460px; }
+        .actin-3 { top: 120px; left: 20px; width: 460px; }
+        .actin-4 { top: 160px; left: 20px; width: 460px; }
+
+        /* Enhanced Myosin Filaments */
+        .myosin-filament-advanced {
+            position: absolute;
+            height: 12px;
+            background: linear-gradient(90deg, 
+                var(--viz-red), 
+                rgba(255, 68, 68, 0.8), 
+                var(--viz-red));
+            border-radius: var(--radius);
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.4);
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .myosin-1 { top: 94px; left: 60px; width: 380px; }
+        .myosin-2 { top: 134px; left: 60px; width: 380px; }
+
+        /* Advanced Myosin Heads */
+        .myosin-head-advanced {
+            position: absolute;
+            width: 16px;
+            height: 24px;
+            background: radial-gradient(ellipse at center, var(--accent-error), rgba(225, 112, 85, 0.8));
+            border-radius: 8px 8px 4px 4px;
+            box-shadow: 
+                0 4px 8px rgba(225, 112, 85, 0.3),
+                inset 0 1px 2px rgba(255, 255, 255, 0.2);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .myosin-head-advanced:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 16px rgba(225, 112, 85, 0.5);
+        }
+
+        /* ATP/ADP Molecules with Enhanced Styling */
+        .molecule-advanced {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            font-weight: 700;
+            color: white;
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .atp-advanced {
+            background: radial-gradient(circle, var(--viz-red), rgba(220, 38, 38, 0.8));
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+        }
+
+        .adp-advanced {
+            background: radial-gradient(circle, var(--accent-warning), rgba(253, 203, 110, 0.8));
+            box-shadow: 0 0 15px rgba(253, 203, 110, 0.5);
+        }
+
+        .molecule-advanced.visible {
+            opacity: 1;
+            animation: molecular-float 3s ease-in-out infinite;
+        }
+
+        @keyframes molecular-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-5px) rotate(120deg); }
+            66% { transform: translateY(5px) rotate(240deg); }
+        }
+
+        /* Calcium Ions */
+        .calcium-ion-advanced {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: radial-gradient(circle, var(--accent-energy), rgba(255, 234, 167, 0.8));
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 7px;
+            font-weight: 700;
+            color: var(--neutral-900);
+            opacity: 0;
+            transition: all 1s ease;
+        }
+
+        .calcium-ion-advanced.active {
+            opacity: 1;
+            animation: calcium-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes calcium-glow {
+            0%, 100% { 
+                box-shadow: 0 0 10px rgba(255, 234, 167, 0.6);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 20px rgba(255, 234, 167, 0.9);
+                transform: scale(1.1);
+            }
+        }
+
+        /* Enhanced Control Buttons */
+        .phase-controls {
+            display: grid;
+            gap: var(--space-3);
+            margin-bottom: var(--space-6);
+        }
+
+        .phase-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-5);
+            font-family: var(--font-primary);
+            font-weight: 600;
+            color: var(--neutral-800);
+            cursor: pointer;
+            transition: all var(--transition);
+            backdrop-filter: var(--glass-backdrop);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phase-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .phase-btn:hover::before {
+            left: 100%;
+        }
+
+        .phase-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-blue);
+        }
+
+        .phase-btn.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        /* Status Panel */
+        .status-panel {
+            background: var(--neuro-card);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            box-shadow: 
+                8px 8px 16px var(--neuro-dark),
+                -8px -8px 16px var(--neuro-light);
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-3) 0;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: var(--neutral-700);
+        }
+
+        .status-value {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--primary-blue);
+            background: var(--primary-blue-ultra-light);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--radius);
+        }
+
+        /* Calcium Concentration Gauge */
+        .calcium-gauge {
+            margin: var(--space-4) 0;
+        }
+
+        .gauge-container {
+            position: relative;
+            height: 20px;
+            background: var(--neutral-200);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-energy), var(--accent-warning));
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border-radius: var(--radius-full);
+        }
+
+        .gauge-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.2) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                rgba(255, 255, 255, 0.2) 75%, 
+                transparent 75%);
+            background-size: 20px 20px;
+            animation: gauge-stripes 2s linear infinite;
+        }
+
+        @keyframes gauge-stripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 0; }
+        }
+
+        /* Cross-bridge Visualization */
+        .crossbridge-advanced {
+            position: absolute;
+            width: 3px;
+            background: linear-gradient(180deg, var(--accent-success), rgba(0, 184, 148, 0.6));
+            opacity: 0;
+            transition: all 1s ease;
+            border-radius: var(--radius-full);
+            box-shadow: 0 0 8px rgba(0, 184, 148, 0.4);
+        }
+
+        .crossbridge-advanced.active {
+            opacity: 1;
+            animation: crossbridge-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes crossbridge-pulse {
+            0%, 100% { transform: scaleY(1); opacity: 1; }
+            50% { transform: scaleY(1.1); opacity: 0.8; }
+        }
+
+        /* Phase Information Panel */
+        .phase-info-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            backdrop-filter: var(--glass-backdrop);
+        }
+
+        .phase-info-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--neutral-800);
+            margin-bottom: var(--space-4);
+        }
+
+        .phase-info-description {
+            color: var(--neutral-700);
+            line-height: 1.6;
+            margin-bottom: var(--space-4);
+        }
+
+        .process-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .process-list li {
+            padding: var(--space-2) 0;
+            color: var(--neutral-600);
+            position: relative;
+            padding-left: var(--space-6);
+        }
+
+        .process-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary-blue);
+            font-weight: 700;
+        }
+
+        /* Sequence Indicator */
+        .sequence-indicator {
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            backdrop-filter: var(--glass-backdrop);
+            min-width: 200px;
+        }
+
+        .sequence-step {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: var(--space-2);
+        }
+
+        .sequence-description {
+            font-size: 0.85rem;
+            color: var(--neutral-600);
+            line-height: 1.4;
+        }
+
+        /* Advanced Legend */
+        .legend-advanced {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-top: var(--space-8);
+            padding: var(--space-6);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            backdrop-filter: var(--glass-backdrop);
+        }
+
+        .legend-item-advanced {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            border-radius: var(--radius);
+            transition: all var(--transition);
+        }
+
+        .legend-item-advanced:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .legend-color-advanced {
+            width: 20px;
+            height: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .legend-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--neutral-700);
+        }
+
+        /* Auto-play Controls */
+        .auto-controls {
+            display: flex;
+            gap: var(--space-3);
+            margin-top: var(--space-6);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--neutral-600);
+            font-size: 0.9rem;
+        }
+
+        .speed-slider {
+            appearance: none;
+            width: 100px;
+            height: 6px;
+            background: var(--neutral-300);
+            border-radius: var(--radius-full);
+            outline: none;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-teal));
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .simulation-workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .muscle-fiber-advanced {
+                transform: scale(0.8);
+                margin: var(--space-4) -10%;
+            }
+            
+            .phase-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scientific-container">
+        <header class="text-center mb-12">
+            <h1 class="display-title">
+                🧬 고급 골격근 흥분-수축 연결 시뮬레이션
+            </h1>
+            <p class="subtitle">
+                Advanced Skeletal Muscle Excitation-Contraction Coupling Simulation
+            </p>
+        </header>
+
+        <div class="simulation-workspace">
+            <div class="main-simulation-panel animate-fade-in-up">
+                <div class="sequence-indicator">
+                    <div class="sequence-step" id="sequenceStep">Phase 1</div>
+                    <div class="sequence-description" id="sequenceDescription">
+                        Ca²⁺ 결합 및 결합부위 노출
+                    </div>
+                </div>
+
+                <div class="muscle-fiber-advanced">
+                    <div class="sarcomere-advanced">
+                        <!-- Actin Filaments -->
+                        <div class="actin-filament-advanced actin-1" id="actin1"></div>
+                        <div class="actin-filament-advanced actin-2" id="actin2"></div>
+                        <div class="actin-filament-advanced actin-3" id="actin3"></div>
+                        <div class="actin-filament-advanced actin-4" id="actin4"></div>
+
+                        <!-- Myosin Filaments -->
+                        <div class="myosin-filament-advanced myosin-1" id="myosin1"></div>
+                        <div class="myosin-filament-advanced myosin-2" id="myosin2"></div>
+
+                        <!-- Myosin Heads -->
+                        <div class="myosin-head-advanced" id="head1" style="top: 82px; left: 120px;"></div>
+                        <div class="myosin-head-advanced" id="head2" style="top: 82px; left: 200px;"></div>
+                        <div class="myosin-head-advanced" id="head3" style="top: 82px; left: 280px;"></div>
+                        <div class="myosin-head-advanced" id="head4" style="top: 82px; left: 360px;"></div>
+
+                        <div class="myosin-head-advanced" id="head5" style="top: 122px; left: 140px;"></div>
+                        <div class="myosin-head-advanced" id="head6" style="top: 122px; left: 220px;"></div>
+                        <div class="myosin-head-advanced" id="head7" style="top: 122px; left: 300px;"></div>
+                        <div class="myosin-head-advanced" id="head8" style="top: 122px; left: 380px;"></div>
+
+                        <!-- ATP Molecules -->
+                        <div class="molecule-advanced atp-advanced" id="atp1" style="top: 60px; left: 130px;">ATP</div>
+                        <div class="molecule-advanced atp-advanced" id="atp2" style="top: 60px; left: 210px;">ATP</div>
+                        <div class="molecule-advanced atp-advanced" id="atp3" style="top: 60px; left: 290px;">ATP</div>
+                        <div class="molecule-advanced atp-advanced" id="atp4" style="top: 60px; left: 370px;">ATP</div>
+
+                        <!-- ADP Molecules -->
+                        <div class="molecule-advanced adp-advanced" id="adp1" style="top: 160px; left: 130px;">ADP</div>
+                        <div class="molecule-advanced adp-advanced" id="adp2" style="top: 160px; left: 210px;">ADP</div>
+                        <div class="molecule-advanced adp-advanced" id="adp3" style="top: 160px; left: 290px;">ADP</div>
+                        <div class="molecule-advanced adp-advanced" id="adp4" style="top: 160px; left: 370px;">ADP</div>
+
+                        <!-- Calcium Ions -->
+                        <div class="calcium-ion-advanced" id="ca1" style="top: 20px; left: 140px;">Ca</div>
+                        <div class="calcium-ion-advanced" id="ca2" style="top: 20px; left: 220px;">Ca</div>
+                        <div class="calcium-ion-advanced" id="ca3" style="top: 20px; left: 300px;">Ca</div>
+                        <div class="calcium-ion-advanced" id="ca4" style="top: 20px; left: 380px;">Ca</div>
+
+                        <!-- Cross-bridges -->
+                        <div class="crossbridge-advanced" id="bridge1" style="top: 50px; left: 138px; height: 30px;"></div>
+                        <div class="crossbridge-advanced" id="bridge2" style="top: 50px; left: 218px; height: 30px;"></div>
+                        <div class="crossbridge-advanced" id="bridge3" style="top: 50px; left: 298px; height: 30px;"></div>
+                        <div class="crossbridge-advanced" id="bridge4" style="top: 50px; left: 378px; height: 30px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel animate-slide-in-right">
+                <div class="phase-controls">
+                    <button class="phase-btn active" onclick="setPhase(1)">
+                        Phase 1: Ca²⁺ 결합
+                    </button>
+                    <button class="phase-btn" onclick="setPhase(2)">
+                        Phase 2: ATP 결합
+                    </button>
+                    <button class="phase-btn" onclick="setPhase(3)">
+                        Phase 3: ATP 가수분해
+                    </button>
+                    <button class="phase-btn" onclick="setPhase(4)">
+                        Phase 4: 크로스브리지 형성
+                    </button>
+                    <button class="phase-btn" onclick="setPhase(5)">
+                        Phase 5: 파워 스트로크
+                    </button>
+                    <button class="phase-btn" onclick="setRelaxation()">
+                        이완: Ca²⁺ 재흡수
+                    </button>
+                </div>
+
+                <div class="status-panel">
+                    <h3 class="section-title" style="font-size: 1.1rem; margin-bottom: var(--space-4);">
+                        실시간 측정값
+                    </h3>
+                    
+                    <div class="status-item">
+                        <span class="status-label">현재 단계:</span>
+                        <span class="status-value" id="currentPhase">Phase 1</span>
+                    </div>
+                    
+                    <div class="status-item">
+                        <span class="status-label">Ca²⁺ 농도:</span>
+                        <span class="status-value" id="caConcentration">10⁻⁵ M</span>
+                    </div>
+                    
+                    <div class="status-item">
+                        <span class="status-label">수축력:</span>
+                        <span class="status-value" id="contractionForce">80%</span>
+                    </div>
+
+                    <div class="calcium-gauge">
+                        <div class="gauge-container">
+                            <div class="gauge-fill" id="calciumFill" style="width: 80%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-info-panel">
+                    <div class="phase-info-title" id="infoTitle">
+                        Phase 1: Ca²⁺ 결합 및 결합부위 노출
+                    </div>
+                    <div class="phase-info-description" id="infoDescription">
+                        근소포체에서 방출된 Ca²⁺가 트로포닌 C에 결합하여 미오신 결합부위가 노출됩니다.
+                    </div>
+                    <ul class="process-list" id="processList">
+                        <li>근소포체에서 Ca²⁺ 방출</li>
+                        <li>트로포닌 C에 Ca²⁺ 결합</li>
+                        <li>트로포미오신 복합체 구조 변화</li>
+                        <li>액틴의 미오신 결합부위 노출</li>
+                    </ul>
+                </div>
+
+                <div class="auto-controls">
+                    <button class="btn-scientific btn-primary" onclick="toggleAutoPlay()">
+                        ⚡ 자동 재생
+                    </button>
+                    <div class="speed-control">
+                        <span>속도:</span>
+                        <input type="range" class="speed-slider" min="0.5" max="3" step="0.5" value="1" id="speedControl">
+                        <span id="speedValue">1x</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend-advanced">
+            <div class="legend-item-advanced">
+                <div class="legend-color-advanced" style="background: linear-gradient(90deg, var(--accent-protein), rgba(78, 205, 196, 0.8));"></div>
+                <span class="legend-label">액틴 필라멘트</span>
+            </div>
+            <div class="legend-item-advanced">
+                <div class="legend-color-advanced" style="background: linear-gradient(90deg, var(--viz-red), rgba(255, 68, 68, 0.8));"></div>
+                <span class="legend-label">미오신 필라멘트</span>
+            </div>
+            <div class="legend-item-advanced">
+                <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--accent-error), rgba(225, 112, 85, 0.8));"></div>
+                <span class="legend-label">미오신 머리</span>
+            </div>
+            <div class="legend-item-advanced">
+                <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--viz-red), rgba(220, 38, 38, 0.8));"></div>
+                <span class="legend-label">ATP 분자</span>
+            </div>
+            <div class="legend-item-advanced">
+                <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--accent-warning), rgba(253, 203, 110, 0.8));"></div>
+                <span class="legend-label">ADP + Pi</span>
+            </div>
+            <div class="legend-item-advanced">
+                <div class="legend-color-advanced" style="background: radial-gradient(circle, var(--accent-energy), rgba(255, 234, 167, 0.8));"></div>
+                <span class="legend-label">Ca²⁺ 이온</span>
+            </div>
+            <div class="legend-item-advanced">
+                <div class="legend-color-advanced" style="background: linear-gradient(180deg, var(--accent-success), rgba(0, 184, 148, 0.6));"></div>
+                <span class="legend-label">크로스브리지</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPhase = 1;
+        let isAutoPlaying = false;
+        let autoPlayInterval;
+        let playbackSpeed = 1;
+
+        const phaseData = {
+            1: {
+                title: "Phase 1: Ca²⁺ 결합 및 결합부위 노출",
+                description: "근소포체에서 방출된 Ca²⁺가 트로포닌 C에 결합하여 미오신 결합부위가 노출됩니다.",
+                processes: [
+                    "근소포체에서 Ca²⁺ 방출",
+                    "트로포닌 C에 Ca²⁺ 결합",
+                    "트로포미오신 복합체 구조 변화",
+                    "액틴의 미오신 결합부위 노출"
+                ],
+                concentration: "10⁻⁵ M",
+                force: "0%",
+                gaugeWidth: "80%"
+            },
+            2: {
+                title: "Phase 2: ATP 결합",
+                description: "ATP가 미오신 머리에 결합하여 액틴으로부터 분리가 준비됩니다.",
+                processes: [
+                    "ATP가 미오신 머리에 결합",
+                    "미오신 머리의 구조 변화",
+                    "액틴-미오신 결합 약화",
+                    "크로스브리지 분리 준비"
+                ],
+                concentration: "10⁻⁵ M",
+                force: "20%",
+                gaugeWidth: "75%"
+            },
+            3: {
+                title: "Phase 3: ATP 가수분해",
+                description: "ATP가 ADP + Pi로 분해되면서 미오신 머리에 에너지가 저장됩니다.",
+                processes: [
+                    "ATP → ADP + Pi 가수분해",
+                    "미오신 머리 에너지 충전",
+                    "구조적 재배치",
+                    "다음 결합을 위한 준비"
+                ],
+                concentration: "10⁻⁵ M",
+                force: "40%",
+                gaugeWidth: "75%"
+            },
+            4: {
+                title: "Phase 4: 크로스브리지 형성",
+                description: "에너지가 충전된 미오신 머리가 액틴과 새로운 크로스브리지를 형성합니다.",
+                processes: [
+                    "미오신 머리가 액틴에 재결합",
+                    "강한 크로스브리지 형성",
+                    "ADP + Pi 아직 결합된 상태",
+                    "파워 스트로크 직전"
+                ],
+                concentration: "10⁻⁵ M",
+                force: "60%",
+                gaugeWidth: "70%"
+            },
+            5: {
+                title: "Phase 5: 파워 스트로크",
+                description: "ADP + Pi가 방출되면서 미오신 머리가 파워 스트로크를 실행합니다.",
+                processes: [
+                    "ADP + Pi 방출",
+                    "미오신 머리의 파워 스트로크",
+                    "액틴 필라멘트 당김",
+                    "최대 장력 발생"
+                ],
+                concentration: "10⁻⁵ M",
+                force: "100%",
+                gaugeWidth: "65%"
+            },
+            relaxation: {
+                title: "근육 이완: Ca²⁺ 재흡수",
+                description: "Ca²⁺ ATPase에 의해 Ca²⁺가 근소포체로 재흡수되어 근육이 이완됩니다.",
+                processes: [
+                    "Ca²⁺ ATPase 활성화",
+                    "근소포체로 Ca²⁺ 재흡수",
+                    "트로포닌에서 Ca²⁺ 해리",
+                    "결합부위 차단 및 이완"
+                ],
+                concentration: "10⁻⁷ M",
+                force: "0%",
+                gaugeWidth: "15%"
+            }
+        };
+
+        function setPhase(phase) {
+            currentPhase = phase;
+            updateUI();
+            animatePhase(phase);
+        }
+
+        function setRelaxation() {
+            currentPhase = 'relaxation';
+            updateUI();
+            animateRelaxation();
+        }
+
+        function updateUI() {
+            const data = phaseData[currentPhase];
+            
+            // Update sequence indicator
+            document.getElementById('sequenceStep').textContent = 
+                currentPhase === 'relaxation' ? 'Relaxation' : `Phase ${currentPhase}`;
+            document.getElementById('sequenceDescription').textContent = data.description;
+            
+            // Update status panel
+            document.getElementById('currentPhase').textContent = 
+                currentPhase === 'relaxation' ? 'Relaxation' : `Phase ${currentPhase}`;
+            document.getElementById('caConcentration').textContent = data.concentration;
+            document.getElementById('contractionForce').textContent = data.force;
+            document.getElementById('calciumFill').style.width = data.gaugeWidth;
+            
+            // Update info panel
+            document.getElementById('infoTitle').textContent = data.title;
+            document.getElementById('infoDescription').textContent = data.description;
+            
+            const processList = document.getElementById('processList');
+            processList.innerHTML = '';
+            data.processes.forEach(process => {
+                const li = document.createElement('li');
+                li.textContent = process;
+                processList.appendChild(li);
+            });
+            
+            // Update button states
+            document.querySelectorAll('.phase-btn').forEach((btn, index) => {
+                btn.classList.remove('active');
+                if ((index + 1) === currentPhase || (currentPhase === 'relaxation' && index === 5)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function animatePhase(phase) {
+            resetAllElements();
+            
+            switch(phase) {
+                case 1:
+                    animateCalciumBinding();
+                    break;
+                case 2:
+                    animateATPBinding();
+                    break;
+                case 3:
+                    animateATPHydrolysis();
+                    break;
+                case 4:
+                    animateCrossbridgeFormation();
+                    break;
+                case 5:
+                    animatePowerStroke();
+                    break;
+            }
+        }
+
+        function animateRelaxation() {
+            resetAllElements();
+            
+            // Show calcium ions being removed
+            document.querySelectorAll('.calcium-ion-advanced').forEach((ca, index) => {
+                setTimeout(() => {
+                    ca.classList.add('active');
+                    setTimeout(() => {
+                        ca.style.opacity = '0.3';
+                        ca.style.transform = 'translateY(-50px)';
+                    }, 1000);
+                }, index * 200);
+            });
+        }
+
+        function animateCalciumBinding() {
+            // Show calcium ions
+            document.querySelectorAll('.calcium-ion-advanced').forEach((ca, index) => {
+                setTimeout(() => {
+                    ca.classList.add('active');
+                }, index * 200);
+            });
+            
+            // Show initial cross-bridges
+            setTimeout(() => {
+                document.querySelectorAll('.crossbridge-advanced').forEach((bridge, index) => {
+                    setTimeout(() => {
+                        bridge.classList.add('active');
+                    }, index * 150);
+                });
+            }, 1000);
+        }
+
+        function animateATPBinding() {
+            animateCalciumBinding();
+            
+            // Show ATP molecules
+            setTimeout(() => {
+                document.querySelectorAll('.atp-advanced').forEach((atp, index) => {
+                    setTimeout(() => {
+                        atp.classList.add('visible');
+                    }, index * 200);
+                });
+            }, 500);
+        }
+
+        function animateATPHydrolysis() {
+            animateCalciumBinding();
+            
+            // Hide ATP, show ADP
+            setTimeout(() => {
+                document.querySelectorAll('.atp-advanced').forEach(atp => {
+                    atp.classList.remove('visible');
+                });
+                
+                setTimeout(() => {
+                    document.querySelectorAll('.adp-advanced').forEach((adp, index) => {
+                        setTimeout(() => {
+                            adp.classList.add('visible');
+                        }, index * 200);
+                    });
+                }, 300);
+            }, 500);
+        }
+
+        function animateCrossbridgeFormation() {
+            animateATPHydrolysis();
+            
+            // Enhanced cross-bridge formation
+            setTimeout(() => {
+                document.querySelectorAll('.crossbridge-advanced').forEach((bridge, index) => {
+                    setTimeout(() => {
+                        bridge.classList.add('active');
+                        bridge.style.height = '40px';
+                    }, index * 150);
+                });
+            }, 1200);
+        }
+
+        function animatePowerStroke() {
+            animateCrossbridgeFormation();
+            
+            // Hide ADP molecules and enhance cross-bridges
+            setTimeout(() => {
+                document.querySelectorAll('.adp-advanced').forEach(adp => {
+                    adp.classList.remove('visible');
+                });
+                
+                // Enhanced power stroke animation
+                document.querySelectorAll('.myosin-head-advanced').forEach(head => {
+                    head.style.transform = 'rotate(45deg) scale(1.1)';
+                });
+                
+                // Sliding effect
+                document.querySelectorAll('.actin-filament-advanced').forEach(actin => {
+                    actin.style.transform = 'translateX(10px)';
+                });
+            }, 1500);
+        }
+
+        function resetAllElements() {
+            // Reset all visual elements
+            document.querySelectorAll('.calcium-ion-advanced').forEach(ca => {
+                ca.classList.remove('active');
+                ca.style.opacity = '0';
+                ca.style.transform = 'none';
+            });
+            
+            document.querySelectorAll('.molecule-advanced').forEach(molecule => {
+                molecule.classList.remove('visible');
+            });
+            
+            document.querySelectorAll('.crossbridge-advanced').forEach(bridge => {
+                bridge.classList.remove('active');
+                bridge.style.height = '30px';
+            });
+            
+            document.querySelectorAll('.myosin-head-advanced').forEach(head => {
+                head.style.transform = 'none';
+            });
+            
+            document.querySelectorAll('.actin-filament-advanced').forEach(actin => {
+                actin.style.transform = 'none';
+            });
+        }
+
+        function toggleAutoPlay() {
+            const btn = document.querySelector('.auto-controls .btn-primary');
+            
+            if (isAutoPlaying) {
+                isAutoPlaying = false;
+                clearInterval(autoPlayInterval);
+                btn.textContent = '⚡ 자동 재생';
+            } else {
+                isAutoPlaying = true;
+                btn.textContent = '⏸️ 일시 정지';
+                
+                let phaseSequence = [1, 2, 3, 4, 5, 'relaxation'];
+                let sequenceIndex = 0;
+                
+                autoPlayInterval = setInterval(() => {
+                    if (phaseSequence[sequenceIndex] === 'relaxation') {
+                        setRelaxation();
+                    } else {
+                        setPhase(phaseSequence[sequenceIndex]);
+                    }
+                    
+                    sequenceIndex = (sequenceIndex + 1) % phaseSequence.length;
+                }, 4000 / playbackSpeed);
+            }
+        }
+
+        // Speed control
+        document.getElementById('speedControl').addEventListener('input', function(e) {
+            playbackSpeed = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = playbackSpeed + 'x';
+            
+            if (isAutoPlaying) {
+                toggleAutoPlay();
+                toggleAutoPlay();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key >= '1' && e.key <= '5') {
+                setPhase(parseInt(e.key));
+            } else if (e.key === '6' || e.key.toLowerCase() === 'r') {
+                setRelaxation();
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                toggleAutoPlay();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setPhase(1);
+            
+            // Add click interactions to molecular components
+            document.querySelectorAll('.molecule-advanced, .myosin-head-advanced, .calcium-ion-advanced').forEach(element => {
+                element.addEventListener('click', function() {
+                    this.style.animation = 'none';
+                    setTimeout(() => {
+                        this.style.animation = '';
+                    }, 10);
+                });
+            });
+            
+            console.log('🧬 Enhanced Muscle Contraction Simulation Ready!');
+            console.log('Keyboard: 1-5 (phases), 6/R (relaxation), Space (auto-play)');
+        });
+    </script>
+</body>
+</html>

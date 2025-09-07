@@ -20,7 +20,7 @@
         }
         
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -57,7 +57,7 @@
         
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1.2fr;
             gap: 40px;
             margin-bottom: 40px;
         }
@@ -129,6 +129,61 @@
             grid-column: 1 / -1;
         }
         
+        /* Continuous slider control */
+        .slider-control {
+            margin: 25px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+        }
+        
+        .slider-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ecf0f1;
+            outline: none;
+            -webkit-appearance: none;
+            margin-bottom: 15px;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .slider-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        
         .current-status {
             background: white;
             padding: 20px;
@@ -158,6 +213,18 @@
         .status-value {
             color: #2c3e50;
             font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .hill-equation {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
         }
         
         .simulation-area {
@@ -319,7 +386,36 @@
             border-radius: 10px;
         }
         
-        /* Force-Velocity Graph */
+        /* Power indicator */
+        .power-display {
+            position: absolute;
+            top: 80px;
+            right: 50px;
+            background: rgba(142, 68, 173, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        .power-bar {
+            width: 150px;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .power-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8e44ad, #9b59b6);
+            transition: width 1s ease;
+            border-radius: 10px;
+        }
+        
+        /* Dual Graph System */
         .graph-section {
             grid-column: 1 / -1;
             background: #f8f9fa;
@@ -330,10 +426,15 @@
         }
         
         .graph-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        
+        .single-graph {
             position: relative;
-            width: 600px;
+            width: 100%;
             height: 400px;
-            margin: 20px auto;
             background: white;
             border: 2px solid #34495e;
             border-radius: 10px;
@@ -341,10 +442,11 @@
         
         .graph-title {
             text-align: center;
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            padding: 10px;
         }
         
         .axis {
@@ -355,7 +457,7 @@
         .x-axis {
             bottom: 50px;
             left: 60px;
-            width: 500px;
+            width: 450px;
             height: 3px;
         }
         
@@ -370,12 +472,12 @@
             position: absolute;
             font-weight: 600;
             color: #2c3e50;
-            font-size: 1.1em;
+            font-size: 1em;
         }
         
         .x-label {
             bottom: 20px;
-            left: 280px;
+            left: 230px;
         }
         
         .y-label {
@@ -384,17 +486,23 @@
             transform: rotate(-90deg);
         }
         
-        /* Graph curve */
+        /* Force-velocity curve */
         .force-velocity-curve {
             position: absolute;
             bottom: 53px;
             left: 63px;
-            width: 494px;
+            width: 444px;
             height: 294px;
         }
         
         .curve-path {
             stroke: #e74c3c;
+            stroke-width: 4;
+            fill: none;
+        }
+        
+        .power-curve-path {
+            stroke: #8e44ad;
             stroke-width: 4;
             fill: none;
         }
@@ -417,9 +525,39 @@
         /* Scale markers */
         .scale-marker {
             position: absolute;
-            font-size: 0.9em;
+            font-size: 0.8em;
             color: #7f8c8d;
             font-weight: 500;
+        }
+        
+        /* Hill equation display */
+        .equation-display {
+            background: #34495e;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .equation-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .equation-formula {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        
+        .equation-values {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
         }
         
         /* Detailed explanation cards */
@@ -523,14 +661,13 @@
         }
         
         /* Responsive design */
-        @media (max-width: 1200px) {
+        @media (max-width: 1400px) {
             .main-content {
                 grid-template-columns: 1fr;
             }
             
             .graph-container {
-                width: 100%;
-                max-width: 600px;
+                grid-template-columns: 1fr;
             }
         }
         
@@ -550,8 +687,8 @@
     <div class="container">
         <div class="header">
             <h1>🔬 골격근 생리학</h1>
-            <h2>Afterload 효과 시뮬레이션</h2>
-            <p>Skeletal Muscle Mechanics: Force-Velocity Relationship</p>
+            <h2>Afterload 효과 - Force-Velocity-Power 관계</h2>
+            <p>Skeletal Muscle Mechanics: Complete Hill Equation Analysis</p>
         </div>
 
         <div class="main-content">
@@ -576,23 +713,42 @@
                     </div>
                 </div>
 
+                <div class="slider-control">
+                    <div class="slider-label">연속 부하 조절 (kg)</div>
+                    <input type="range" min="1" max="25" value="10" class="slider" id="afterloadSlider" oninput="setContinuousAfterload(this.value)">
+                    <div class="slider-values">
+                        <span>1kg</span>
+                        <span id="sliderValue">10kg</span>
+                        <span>25kg</span>
+                    </div>
+                </div>
+
                 <div class="current-status">
                     <h4 style="margin-bottom: 15px; color: #2c3e50;">📈 현재 측정값</h4>
                     <div class="status-row">
-                        <span class="status-label">Afterload:</span>
-                        <span class="status-value" id="currentAfterload">2 kg</span>
+                        <span class="status-label">Afterload (P):</span>
+                        <span class="status-value" id="currentAfterload">10 kg</span>
                     </div>
                     <div class="status-row">
-                        <span class="status-label">수축 속도:</span>
-                        <span class="status-value" id="currentVelocity">100%</span>
+                        <span class="status-label">수축 속도 (V):</span>
+                        <span class="status-value" id="currentVelocity">50%</span>
                     </div>
                     <div class="status-row">
-                        <span class="status-label">근력 발생:</span>
-                        <span class="status-value" id="currentForce">최대</span>
+                        <span class="status-label">발생 근력 (F):</span>
+                        <span class="status-value" id="currentForce">중간</span>
                     </div>
                     <div class="status-row">
-                        <span class="status-label">수축 상태:</span>
-                        <span class="status-value" id="currentState">빠른 수축</span>
+                        <span class="status-label">기계적 일률 (Power):</span>
+                        <span class="status-value" id="currentPower">67%</span>
+                    </div>
+                </div>
+
+                <div class="equation-display">
+                    <div class="equation-title">🧮 Hill의 방정식</div>
+                    <div class="equation-formula">(P + a)(V + b) = (P₀ + a)b</div>
+                    <div class="equation-values">
+                        <div>P₀ = 20kg (최대장력)</div>
+                        <div>a = 5kg, b = 2 (근육상수)</div>
                     </div>
                 </div>
             </div>
@@ -601,9 +757,16 @@
                 <h3 class="section-title">🏋️ 근육 수축 시뮬레이션</h3>
                 
                 <div class="velocity-display">
-                    <div>수축 속도: <span id="velocityPercent">100%</span></div>
+                    <div>수축 속도: <span id="velocityPercent">50%</span></div>
                     <div class="velocity-bar">
-                        <div class="velocity-fill" id="velocityFill" style="width: 100%;"></div>
+                        <div class="velocity-fill" id="velocityFill" style="width: 50%;"></div>
+                    </div>
+                </div>
+
+                <div class="power-display">
+                    <div>기계적 일률: <span id="powerPercent">67%</span></div>
+                    <div class="power-bar">
+                        <div class="power-fill" id="powerFill" style="width: 67%;"></div>
                     </div>
                 </div>
 
@@ -628,7 +791,7 @@
 
                     <!-- Weight (afterload) -->
                     <div class="afterload-weight" id="afterloadWeight">
-                        <div id="weightValue">2kg</div>
+                        <div id="weightValue">10kg</div>
                     </div>
 
                     <!-- Force arrows -->
@@ -639,105 +802,119 @@
         </div>
 
         <div class="graph-section">
-            <h3 class="section-title">📈 Force-Velocity 관계 곡선</h3>
+            <h3 class="section-title">📈 근육 역학 분석 그래프</h3>
             <div class="graph-container">
-                <div class="graph-title">근육 수축 속도 vs. 부하 관계</div>
-                
-                <!-- Axes -->
-                <div class="axis x-axis"></div>
-                <div class="axis y-axis"></div>
-                
-                <!-- Labels -->
-                <div class="axis-label x-label">Force (Afterload) →</div>
-                <div class="axis-label y-label">Velocity →</div>
-                
-                <!-- Scale markers -->
-                <div class="scale-marker" style="bottom: 30px; left: 60px;">0</div>
-                <div class="scale-marker" style="bottom: 30px; left: 160px;">5</div>
-                <div class="scale-marker" style="bottom: 30px; left: 260px;">10</div>
-                <div class="scale-marker" style="bottom: 30px; left: 360px;">15</div>
-                <div class="scale-marker" style="bottom: 30px; left: 460px;">20</div>
-                <div class="scale-marker" style="bottom: 30px; left: 540px;">kg</div>
-                
-                <div class="scale-marker" style="bottom: 50px; left: 25px;">0</div>
-                <div class="scale-marker" style="bottom: 100px; left: 25px;">25</div>
-                <div class="scale-marker" style="bottom: 150px; left: 25px;">50</div>
-                <div class="scale-marker" style="bottom: 200px; left: 25px;">75</div>
-                <div class="scale-marker" style="bottom: 250px; left: 25px;">100</div>
-                <div class="scale-marker" style="bottom: 300px; left: 15px;">%</div>
+                <!-- Force-Velocity Graph -->
+                <div class="single-graph">
+                    <div class="graph-title">Force-Velocity 관계</div>
+                    
+                    <!-- Axes -->
+                    <div class="axis x-axis"></div>
+                    <div class="axis y-axis"></div>
+                    
+                    <!-- Labels -->
+                    <div class="axis-label x-label">Force (kg) →</div>
+                    <div class="axis-label y-label">Velocity (%) →</div>
+                    
+                    <!-- Scale markers -->
+                    <div class="scale-marker" style="bottom: 30px; left: 60px;">0</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 150px;">5</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 240px;">10</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 330px;">15</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 420px;">20</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 480px;">25</div>
+                    
+                    <div class="scale-marker" style="bottom: 50px; left: 25px;">0</div>
+                    <div class="scale-marker" style="bottom: 110px; left: 25px;">25</div>
+                    <div class="scale-marker" style="bottom: 170px; left: 25px;">50</div>
+                    <div class="scale-marker" style="bottom: 230px; left: 25px;">75</div>
+                    <div class="scale-marker" style="bottom: 290px; left: 25px;">100</div>
 
-                <!-- Force-velocity curve -->
-                <svg class="force-velocity-curve">
-                    <!-- Grid lines -->
-                    <line class="grid-line" x1="0" y1="0" x2="494" y2="0"></line>
-                    <line class="grid-line" x1="0" y1="74" x2="494" y2="74"></line>
-                    <line class="grid-line" x1="0" y1="147" x2="494" y2="147"></line>
-                    <line class="grid-line" x1="0" y1="221" x2="494" y2="221"></line>
-                    <line class="grid-line" x1="0" y1="294" x2="494" y2="294"></line>
+                    <!-- Force-velocity curve -->
+                    <svg class="force-velocity-curve">
+                        <!-- Grid lines -->
+                        <line class="grid-line" x1="0" y1="0" x2="444" y2="0"></line>
+                        <line class="grid-line" x1="0" y1="60" x2="444" y2="60"></line>
+                        <line class="grid-line" x1="0" y1="120" x2="444" y2="120"></line>
+                        <line class="grid-line" x1="0" y1="180" x2="444" y2="180"></line>
+                        <line class="grid-line" x1="0" y1="240" x2="444" y2="240"></line>
+                        <line class="grid-line" x1="0" y1="294" x2="444" y2="294"></line>
+                        
+                        <line class="grid-line" x1="90" y1="0" x2="90" y2="294"></line>
+                        <line class="grid-line" x1="180" y1="0" x2="180" y2="294"></line>
+                        <line class="grid-line" x1="270" y1="0" x2="270" y2="294"></line>
+                        <line class="grid-line" x1="360" y1="0" x2="360" y2="294"></line>
+                        
+                        <!-- Force-velocity curve (hyperbolic) -->
+                        <path class="curve-path" d="M 0 294 Q 50 200 90 147 Q 140 100 180 74 Q 220 50 270 37 Q 320 25 360 20 Q 400 15 444 10"></path>
+                        
+                        <!-- Current point indicator -->
+                        <circle class="current-point" id="currentPointFV" cx="180" cy="74" r="8"></circle>
+                    </svg>
+                </div>
+
+                <!-- Force-Power Graph -->
+                <div class="single-graph">
+                    <div class="graph-title">Force-Power 관계</div>
                     
-                    <line class="grid-line" x1="99" y1="0" x2="99" y2="294"></line>
-                    <line class="grid-line" x1="198" y1="0" x2="198" y2="294"></line>
-                    <line class="grid-line" x1="297" y1="0" x2="297" y2="294"></line>
-                    <line class="grid-line" x1="396" y1="0" x2="396" y2="294"></line>
+                    <!-- Axes -->
+                    <div class="axis x-axis"></div>
+                    <div class="axis y-axis"></div>
                     
-                    <!-- Force-velocity curve (hyperbolic) -->
-                    <path class="curve-path" d="M 0 294 Q 100 200 200 147 Q 300 74 400 37 Q 450 20 494 10"></path>
+                    <!-- Labels -->
+                    <div class="axis-label x-label">Force (kg) →</div>
+                    <div class="axis-label y-label">Power (%) →</div>
                     
-                    <!-- Current point indicator -->
-                    <circle class="current-point" id="currentPoint" cx="99" cy="250" r="8"></circle>
-                </svg>
+                    <!-- Scale markers -->
+                    <div class="scale-marker" style="bottom: 30px; left: 60px;">0</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 150px;">5</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 240px;">10</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 330px;">15</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 420px;">20</div>
+                    <div class="scale-marker" style="bottom: 30px; left: 480px;">25</div>
+                    
+                    <div class="scale-marker" style="bottom: 50px; left: 25px;">0</div>
+                    <div class="scale-marker" style="bottom: 110px; left: 25px;">25</div>
+                    <div class="scale-marker" style="bottom: 170px; left: 25px;">50</div>
+                    <div class="scale-marker" style="bottom: 230px; left: 25px;">75</div>
+                    <div class="scale-marker" style="bottom: 290px; left: 25px;">100</div>
+
+                    <!-- Force-power curve -->
+                    <svg class="force-velocity-curve">
+                        <!-- Grid lines -->
+                        <line class="grid-line" x1="0" y1="0" x2="444" y2="0"></line>
+                        <line class="grid-line" x1="0" y1="60" x2="444" y2="60"></line>
+                        <line class="grid-line" x1="0" y1="120" x2="444" y2="120"></line>
+                        <line class="grid-line" x1="0" y1="180" x2="444" y2="180"></line>
+                        <line class="grid-line" x1="0" y1="240" x2="444" y2="240"></line>
+                        <line class="grid-line" x1="0" y1="294" x2="444" y2="294"></line>
+                        
+                        <line class="grid-line" x1="90" y1="0" x2="90" y2="294"></line>
+                        <line class="grid-line" x1="180" y1="0" x2="180" y2="294"></line>
+                        <line class="grid-line" x1="270" y1="0" x2="270" y2="294"></line>
+                        <line class="grid-line" x1="360" y1="0" x2="360" y2="294"></line>
+                        
+                        <!-- Force-power curve (bell-shaped) -->
+                        <path class="power-curve-path" d="M 0 294 Q 45 240 90 180 Q 135 120 180 90 Q 225 70 270 80 Q 315 100 360 140 Q 400 200 444 270"></path>
+                        
+                        <!-- Current point indicator -->
+                        <circle class="current-point" id="currentPointFP" cx="180" cy="90" r="8"></circle>
+                    </svg>
+                </div>
             </div>
         </div>
 
         <div class="explanation-cards">
             <div class="explanation-card">
-                <div class="card-title">💡 Afterload의 정의</div>
+                <div class="card-title">🧮 Hill 방정식의 완전한 이해</div>
                 <div class="card-content">
-                    <p><strong>Afterload</strong>는 근육이 수축을 시작한 후에 극복해야 하는 부하를 의미합니다.</p>
+                    <p><strong>(P + a)(V + b) = (P₀ + a)b</strong></p>
                     <ul>
-                        <li>근육이 발생시켜야 하는 장력의 크기</li>
-                        <li>수축 속도에 역비례 관계</li>
-                        <li>근육의 최대 수축력 한계 존재</li>
-                        <li>생리학적 수축 조절 메커니즘</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="explanation-card">
-                <div class="card-title">🟢 최소 부하 (Minimal Afterload)</div>
-                <div class="card-content">
-                    <p>부하가 작을 때 근육은 <strong>최대 속도</strong>로 수축할 수 있습니다.</p>
-                    <ul>
-                        <li>Vmax에 근접한 수축 속도</li>
-                        <li>최소한의 저항만 극복</li>
-                        <li>효율적인 에너지 사용</li>
-                        <li>빠른 움직임 가능</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="explanation-card">
-                <div class="card-title">🟡 중간 부하 (Intermediate Afterload)</div>
-                <div class="card-content">
-                    <p>중간 정도의 부하에서는 <strong>중간 속도</strong>로 수축합니다.</p>
-                    <ul>
-                        <li>속도와 힘의 균형</li>
-                        <li>일상적인 활동 범위</li>
-                        <li>지속 가능한 수축</li>
-                        <li>효율적인 일 수행</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="explanation-card">
-                <div class="card-title">🔴 최대 부하 (Maximal Afterload)</div>
-                <div class="card-content">
-                    <p>부하가 근육의 최대 수축력을 초과하면 <strong>수축이 불가능</strong>합니다.</p>
-                    <ul>
-                        <li>등척성 수축 (길이 변화 없음)</li>
-                        <li>최대 장력 발생</li>
-                        <li>움직임 없는 상태</li>
-                        <li>높은 에너지 소모</li>
+                        <li><strong>P</strong>: 부하 (Afterload, kg)</li>
+                        <li><strong>V</strong>: 수축 속도 (Velocity, %)</li>
+                        <li><strong>P₀</strong>: 최대 등척성 장력 (20kg)</li>
+                        <li><strong>a, b</strong>: 근육 특성 상수</li>
+                        <li>열역학적 효율성 반영</li>
                     </ul>
                 </div>
             </div>
@@ -745,25 +922,69 @@
             <div class="explanation-card">
                 <div class="card-title">📊 Force-Velocity 관계</div>
                 <div class="card-content">
-                    <p>Hill의 방정식으로 설명되는 <strong>역쌍곡선 관계</strong>입니다.</p>
+                    <p>부하와 수축속도는 <strong>역쌍곡선 관계</strong>를 보입니다.</p>
                     <ul>
-                        <li>(P + a)(V + b) = (P₀ + a)b</li>
-                        <li>P: 부하, V: 속도, P₀: 최대 장력</li>
-                        <li>a, b: 근육 특성 상수</li>
-                        <li>생리학적 최적화 원리</li>
+                        <li>부하 ↑ → 속도 ↓ (지수적 감소)</li>
+                        <li>무부하 시 최대속도 (Vmax)</li>
+                        <li>최대부하 시 속도 0 (등척성)</li>
+                        <li>근육 타입별 곡선 차이</li>
+                        <li>ATP 재합성 속도 제한</li>
                     </ul>
                 </div>
             </div>
 
             <div class="explanation-card">
-                <div class="card-title">🏥 임상적 의미</div>
+                <div class="card-title">⚡ Force-Power 관계</div>
                 <div class="card-content">
-                    <p>심장근육과 골격근의 <strong>기능 평가</strong>에 중요한 지표입니다.</p>
+                    <p><strong>Power = Force × Velocity</strong>로 계산되는 기계적 일률입니다.</p>
                     <ul>
-                        <li>심장 기능 평가 (cardiac afterload)</li>
-                        <li>근력 훈련 프로그램 설계</li>
+                        <li>중간 부하에서 최대 파워</li>
+                        <li>최적 부하 = P₀/3 (약 33%)</li>
+                        <li>운동 수행능력 지표</li>
+                        <li>근육 효율성 평가</li>
+                        <li>스포츠 과학 응용</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🔬 분자적 메커니즘</div>
+                <div class="card-content">
+                    <p>Cross-bridge cycle의 <strong>속도론적 특성</strong>이 반영됩니다.</p>
+                    <ul>
+                        <li>ATP 가수분해 속도</li>
+                        <li>Myosin head 결합/해리</li>
+                        <li>부하 의존적 변형률</li>
+                        <li>협동적 결합 효과</li>
+                        <li>에너지 효율성</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🏥 임상적 응용</div>
+                <div class="card-content">
+                    <p>다양한 임상 분야에서 <strong>진단과 치료</strong>에 활용됩니다.</p>
+                    <ul>
+                        <li>심장 기능 평가 (afterload)</li>
+                        <li>근력 훈련 프로그램</li>
                         <li>재활 치료 계획</li>
-                        <li>운동 처방 기준</li>
+                        <li>스포츠 의학</li>
+                        <li>근육병 진단</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="explanation-card">
+                <div class="card-title">🎯 실험적 활용</div>
+                <div class="card-content">
+                    <p>슬라이더를 조작하여 <strong>연속적인 변화</strong>를 관찰해보세요.</p>
+                    <ul>
+                        <li>실시간 곡선 추적</li>
+                        <li>최적 파워 지점 확인</li>
+                        <li>Hill 상수 영향 이해</li>
+                        <li>근육 타입 비교</li>
+                        <li>정량적 분석 연습</li>
                     </ul>
                 </div>
             </div>
@@ -771,103 +992,173 @@
     </div>
 
     <script>
-        let currentAfterloadType = 'minimal';
+        let currentAfterloadType = 'intermediate';
         let isAutoDemo = false;
         let autoInterval;
 
-        // Afterload 설정 함수
+        // Hill equation parameters
+        const P0 = 20; // Maximum isometric force (kg)
+        const a = 5;   // Force constant
+        const b = 2;   // Velocity constant
+
+        // Calculate velocity using Hill equation
+        function calculateVelocity(force) {
+            if (force >= P0) return 0;
+            return (P0 + a) * b / (force + a) - b;
+        }
+
+        // Calculate power (Force × Velocity)
+        function calculatePower(force, velocity) {
+            return force * velocity;
+        }
+
+        // Convert to percentage for display
+        function toPercentage(value, max) {
+            return Math.round((value / max) * 100);
+        }
+
+        // 연속 부하 조절 함수
+        function setContinuousAfterload(force) {
+            const forceNum = parseFloat(force);
+            document.getElementById('sliderValue').textContent = forceNum + 'kg';
+            
+            // Calculate velocity using Hill equation
+            const velocity = calculateVelocity(forceNum);
+            const maxVelocity = calculateVelocity(0); // Vmax
+            const velocityPercent = toPercentage(velocity, maxVelocity);
+            
+            // Calculate power
+            const power = calculatePower(forceNum, velocity);
+            const maxPower = calculatePower(P0/3, calculateVelocity(P0/3)); // Optimal power
+            const powerPercent = toPercentage(power, maxPower);
+            
+            // Update displays
+            updateUI(forceNum, velocityPercent, powerPercent, velocity, power);
+            
+            // Update graph points
+            updateGraphPoints(forceNum, velocityPercent, powerPercent);
+            
+            // Update muscle animation
+            updateMuscleAnimation(forceNum, velocityPercent);
+        }
+
+        // Afterload 설정 함수 (기존 버튼용)
         function setAfterload(type) {
             currentAfterloadType = type;
+            let forceNum;
+
+            switch(type) {
+                case 'minimal':
+                    forceNum = 2;
+                    break;
+                case 'intermediate':
+                    forceNum = 10;
+                    break;
+                case 'maximal':
+                    forceNum = 20;
+                    break;
+            }
+
+            // Update slider
+            document.getElementById('afterloadSlider').value = forceNum;
+            setContinuousAfterload(forceNum);
+        }
+
+        // UI 업데이트 함수
+        function updateUI(force, velocityPercent, powerPercent, velocity, power) {
+            const weightValue = document.getElementById('weightValue');
+            const weight = document.getElementById('afterloadWeight');
+            const velocityFill = document.getElementById('velocityFill');
+            const powerFill = document.getElementById('powerFill');
+            
+            // Weight display
+            weightValue.textContent = force + 'kg';
+            
+            // Color based on force level
+            let weightColor;
+            if (force <= 5) {
+                weightColor = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            } else if (force <= 15) {
+                weightColor = 'linear-gradient(135deg, #f39c12, #e67e22)';
+            } else {
+                weightColor = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+            }
+            weight.style.background = weightColor;
+            
+            // Velocity and power bars
+            velocityFill.style.width = Math.max(0, velocityPercent) + '%';
+            powerFill.style.width = Math.max(0, powerPercent) + '%';
+            
+            // Text displays
+            document.getElementById('velocityPercent').textContent = Math.max(0, velocityPercent) + '%';
+            document.getElementById('powerPercent').textContent = Math.max(0, powerPercent) + '%';
+            
+            // Status table
+            document.getElementById('currentAfterload').textContent = force + ' kg';
+            document.getElementById('currentVelocity').textContent = Math.max(0, velocityPercent) + '%';
+            document.getElementById('currentPower').textContent = Math.max(0, powerPercent) + '%';
+            
+            // Force description
+            let forceDesc;
+            if (force <= 5) forceDesc = '경량';
+            else if (force <= 15) forceDesc = '중간';
+            else forceDesc = '고중량';
+            document.getElementById('currentForce').textContent = forceDesc;
+        }
+
+        // 그래프 포인트 업데이트
+        function updateGraphPoints(force, velocityPercent, powerPercent) {
+            const pointFV = document.getElementById('currentPointFV');
+            const pointFP = document.getElementById('currentPointFP');
+            
+            // Force-Velocity graph (force: 0-25kg -> 0-444px, velocity: 0-100% -> 294-0px)
+            const xPos = (force / 25) * 444;
+            const yPosFV = 294 - (Math.max(0, velocityPercent) / 100) * 294;
+            
+            pointFV.setAttribute('cx', xPos);
+            pointFV.setAttribute('cy', yPosFV);
+            
+            // Force-Power graph
+            const yPosFP = 294 - (Math.max(0, powerPercent) / 100) * 294;
+            
+            pointFP.setAttribute('cx', xPos);
+            pointFP.setAttribute('cy', yPosFP);
+            
+            // Point colors based on efficiency
+            let pointColor;
+            if (powerPercent > 80) {
+                pointColor = '#27ae60'; // Green for high power
+            } else if (powerPercent > 40) {
+                pointColor = '#f39c12'; // Orange for medium power
+            } else {
+                pointColor = '#e74c3c'; // Red for low power
+            }
+            
+            pointFV.style.fill = pointColor;
+            pointFP.style.fill = pointColor;
+        }
+
+        // 근육 애니메이션 업데이트
+        function updateMuscleAnimation(force, velocityPercent) {
             const muscleFiber = document.getElementById('muscleFiber');
             const weight = document.getElementById('afterloadWeight');
-            const weightValue = document.getElementById('weightValue');
-            const velocityFill = document.getElementById('velocityFill');
-            const currentPoint = document.getElementById('currentPoint');
             
-            // 기존 애니메이션 클래스 제거
+            // Remove existing animation classes
             muscleFiber.classList.remove('contracting-fast', 'contracting-slow', 'contracting-none');
             weight.classList.remove('weight-moving', 'weight-slow', 'weight-static');
 
-            let afterloadKg, velocity, force, state, pointX, pointY, weightColor;
-
-            switch(type) {
-                case 'minimal':
-                    afterloadKg = '2kg';
-                    velocity = '100%';
-                    force = '최대';
-                    state = '빠른 수축';
-                    pointX = 99;  // 2kg position
-                    pointY = 250; // High velocity
-                    weightColor = 'linear-gradient(135deg, #27ae60, #2ecc71)';
-                    
-                    setTimeout(() => {
-                        muscleFiber.classList.add('contracting-fast');
-                        weight.classList.add('weight-moving');
-                    }, 100);
-                    break;
-
-                case 'intermediate':
-                    afterloadKg = '10kg';
-                    velocity = '50%';
-                    force = '중간';
-                    state = '중간 수축';
-                    pointX = 297; // 10kg position
-                    pointY = 147; // Medium velocity
-                    weightColor = 'linear-gradient(135deg, #f39c12, #e67e22)';
-                    
-                    setTimeout(() => {
-                        muscleFiber.classList.add('contracting-slow');
-                        weight.classList.add('weight-slow');
-                    }, 100);
-                    break;
-
-                case 'maximal':
-                    afterloadKg = '20kg';
-                    velocity = '0%';
-                    force = '최대한계';
-                    state = '수축 불가';
-                    pointX = 494; // 20kg position
-                    pointY = 10;  // No velocity
-                    weightColor = 'linear-gradient(135deg, #e74c3c, #c0392b)';
-                    
-                    setTimeout(() => {
-                        muscleFiber.classList.add('contracting-none');
-                        weight.classList.add('weight-static');
-                    }, 100);
-                    break;
-            }
-
-            // UI 업데이트
-            weightValue.textContent = afterloadKg;
-            weight.style.background = weightColor;
-            velocityFill.style.width = velocity;
-            document.getElementById('velocityPercent').textContent = velocity;
-            
-            // 상태 정보 업데이트
-            document.getElementById('currentAfterload').textContent = afterloadKg;
-            document.getElementById('currentVelocity').textContent = velocity;
-            document.getElementById('currentForce').textContent = force;
-            document.getElementById('currentState').textContent = state;
-            
-            // 그래프 포인트 이동
-            currentPoint.setAttribute('cx', pointX);
-            currentPoint.setAttribute('cy', pointY);
-
-            // 포인트 색상 변경
-            switch(type) {
-                case 'minimal':
-                    currentPoint.style.fill = '#27ae60';
-                    currentPoint.style.stroke = '#229954';
-                    break;
-                case 'intermediate':
-                    currentPoint.style.fill = '#f39c12';
-                    currentPoint.style.stroke = '#e67e22';
-                    break;
-                case 'maximal':
-                    currentPoint.style.fill = '#e74c3c';
-                    currentPoint.style.stroke = '#c0392b';
-                    break;
-            }
+            setTimeout(() => {
+                if (velocityPercent > 70) {
+                    muscleFiber.classList.add('contracting-fast');
+                    weight.classList.add('weight-moving');
+                } else if (velocityPercent > 20) {
+                    muscleFiber.classList.add('contracting-slow');
+                    weight.classList.add('weight-slow');
+                } else {
+                    muscleFiber.classList.add('contracting-none');
+                    weight.classList.add('weight-static');
+                }
+            }, 100);
         }
 
         // 자동 시연 토글
@@ -886,22 +1177,24 @@
                 btn.textContent = '⏸️ 시연 중지';
                 btn.style.background = 'linear-gradient(135deg, #e67e22, #d35400)';
                 
-                const sequence = ['minimal', 'intermediate', 'maximal'];
-                let index = 0;
+                let force = 1;
+                let direction = 1;
                 
                 autoInterval = setInterval(() => {
-                    setAfterload(sequence[index]);
-                    index = (index + 1) % sequence.length;
-                }, 4000);
-                
-                // 첫 번째 단계 즉시 실행
-                setAfterload(sequence[0]);
+                    setContinuousAfterload(force);
+                    document.getElementById('afterloadSlider').value = force;
+                    
+                    force += direction * 0.5;
+                    if (force >= 25 || force <= 1) {
+                        direction *= -1;
+                    }
+                }, 300);
             }
         }
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            setAfterload('minimal');
+            setContinuousAfterload(10);
             
             // 키보드 단축키
             document.addEventListener('keydown', function(e) {
@@ -919,11 +1212,31 @@
                         e.preventDefault();
                         toggleAutoDemo();
                         break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        const currentVal = parseInt(document.getElementById('afterloadSlider').value);
+                        if (currentVal > 1) {
+                            setContinuousAfterload(currentVal - 1);
+                            document.getElementById('afterloadSlider').value = currentVal - 1;
+                        }
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        const currentVal2 = parseInt(document.getElementById('afterloadSlider').value);
+                        if (currentVal2 < 25) {
+                            setContinuousAfterload(currentVal2 + 1);
+                            document.getElementById('afterloadSlider').value = currentVal2 + 1;
+                        }
+                        break;
                 }
             });
 
-            console.log('🔬 Afterload 시뮬레이션이 준비되었습니다!');
-            console.log('키보드 단축키: 1(최소), 2(중간), 3(최대), Space(자동시연)');
+            console.log('🔬 고급 Afterload 시뮬레이션이 준비되었습니다!');
+            console.log('조작법:');
+            console.log('- 슬라이더: 연속적 부하 조절');
+            console.log('- 키보드: 1(최소), 2(중간), 3(최대), Space(자동), ←→(미세조절)');
+            console.log('- Hill 방정식: (P + a)(V + b) = (P₀ + a)b');
+            console.log('- 최적 파워: P₀/3 = 6.67kg에서 발생');
         });
     </script>
 </body>
