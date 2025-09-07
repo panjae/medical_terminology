@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 13.II - Smooth Muscle Structure (A & B)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #2c3e50;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            min-height: calc(100vh - 40px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 4px solid #1e3c72;
+        }
+        
+        .header h1 {
+            font-size: 2.3em;
+            color: #1e3c72;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1em;
+            color: #546e7a;
+            font-style: italic;
+        }
+        
+        .intro-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #1e3c72;
+            margin-bottom: 25px;
+        }
+        
+        .intro-box p {
+            font-size: 1.05em;
+            color: #34495e;
+            line-height: 1.7;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1.2fr 2fr 1.2fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .section-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .section-card h2 {
+            color: #1e3c72;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .subsection {
+            margin-bottom: 18px;
+        }
+        
+        .subsection h3 {
+            color: #2c3e50;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-list li {
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li:before {
+            content: "•";
+            color: #3498db;
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+        
+        /* Figure 13.2 Recreation */
+        .figure-container {
+            background: #f8f9fa;
+            border: 2px solid #1e3c72;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .figure-title {
+            text-align: center;
+            color: #1e3c72;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        
+        .smooth-muscle-diagram {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        /* Interactive Smooth Muscle Cell SVG */
+        .cell-svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .interactive-label {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .interactive-label:hover {
+            transform: scale(1.1);
+        }
+        
+        .highlight-text {
+            background: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: #856404;
+        }
+        
+        .protein-box {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border-left: 3px solid #43a047;
+            font-size: 0.85em;
+        }
+        
+        .protein-box strong {
+            color: #2e7d32;
+        }
+        
+        .comparison-table {
+            grid-column: 1 / -1;
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border: 2px solid #1e3c72;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .comparison-table th {
+            background: #1e3c72;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 0.95em;
+        }
+        
+        .comparison-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.85em;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .key-point {
+            grid-column: 1 / -1;
+            background: #fef9e7;
+            border: 2px solid #f39c12;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .key-point h3 {
+            color: #e67e22;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        
+        .key-point p {
+            color: #34495e;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+        
+        .dimension {
+            color: #e91e63;
+            font-weight: 600;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+        
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .page-container {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>Chapter 13. II. STRUCTURE</h1>
+            <div class="subtitle">A. Contractile Units & B. Assembly</div>
+        </div>
+
+        <div class="intro-box">
+            <p>
+                Smooth muscle develops force through <strong>actin-myosin interactions</strong>. 
+                Myosin concentrations are much lower than in skeletal muscle, but actin levels are similar. 
+                Individual cells contain <span class="highlight-text">minisarcomeres</span> - small contractile units 
+                that lack regular alignment, resulting in no visible striations ("smooth" muscle).
+            </p>
+        </div>
+
+        <div class="main-content">
+            <div class="section-card">
+                <h2>🔬 A. Contractile Units</h2>
+                
+                <div class="subsection">
+                    <h3>1. Thick Filaments</h3>
+                    <ul class="feature-list">
+                        <li>Hexameric myosin structure</li>
+                        <li>2 myosin heavy chains (MHCs)</li>
+                        <li>2 pairs of light chains:
+                            <div class="protein-box">
+                                <strong>• 17-kDa essential LC</strong><br>
+                                <strong>• 20-kDa MLC20</strong> (regulatory)
+                            </div>
+                        </li>
+                        <li>Length: <span class="dimension">~1.6 μm</span></li>
+                        <li>ATPase activity in heads</li>
+                    </ul>
+                </div>
+                
+                <div class="subsection">
+                    <h3>2. Thin Filaments</h3>
+                    <ul class="feature-list">
+                        <li>Length: <span class="dimension">4.5 μm</span></li>
+                        <li>SMA isoforms:
+                            <div class="protein-box">
+                                <strong>• α-SMA</strong> (vascular)<br>
+                                <strong>• γ-SMA</strong> (GI tract)
+                            </div>
+                        </li>
+                        <li><span class="highlight-text">NO troponin</span></li>
+                        <li>Ca²⁺-dependent inhibitors:
+                            <div class="protein-box">
+                                <strong>• Caldesmon</strong><br>
+                                <strong>• Calponin</strong>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Figure 13.2 - Central Interactive Diagram -->
+            <div class="figure-container">
+                <div class="figure-title">Figure 13.2. Smooth Muscle Organization</div>
+                <div class="smooth-muscle-diagram">
+                    <svg class="cell-svg" viewBox="0 0 500 500">
+                        <!-- Smooth Muscle Cell Outline -->
+                        <ellipse cx="250" cy="250" rx="220" ry="180" 
+                                fill="#ffecd2" stroke="#8b4513" stroke-width="3"/>
+                        
+                        <!-- Nucleus -->
+                        <ellipse cx="250" cy="250" rx="60" ry="35" 
+                                fill="#9370db" stroke="#4b0082" stroke-width="2"
+                                class="interactive-label" id="nucleus"/>
+                        <text x="250" y="255" text-anchor="middle" 
+                              font-size="12" fill="white" font-weight="bold">Nucleus</text>
+                        
+                        <!-- Dense Bodies (scattered throughout) -->
+                        <circle cx="150" cy="180" r="12" fill="#2c3e50" class="interactive-label dense-body"/>
+                        <circle cx="350" cy="190" r="12" fill="#2c3e50" class="interactive-label dense-body"/>
+                        <circle cx="180" cy="300" r="12" fill="#2c3e50" class="interactive-label dense-body"/>
+                        <circle cx="320" cy="310" r="12" fill="#2c3e50" class="interactive-label dense-body"/>
+                        <circle cx="200" cy="220" r="12" fill="#2c3e50" class="interactive-label dense-body"/>
+                        <circle cx="300" cy="240" r="12" fill="#2c3e50" class="interactive-label dense-body"/>
+                        
+                        <!-- Focal Adhesions (at membrane) -->
+                        <rect x="30" y="240" width="20" height="20" rx="3" 
+                              fill="#e74c3c" class="interactive-label focal-adhesion"/>
+                        <rect x="450" y="240" width="20" height="20" rx="3" 
+                              fill="#e74c3c" class="interactive-label focal-adhesion"/>
+                        <rect x="240" y="70" width="20" height="20" rx="3" 
+                              fill="#e74c3c" class="interactive-label focal-adhesion"/>
+                        <rect x="240" y="410" width="20" height="20" rx="3" 
+                              fill="#e74c3c" class="interactive-label focal-adhesion"/>
+                        
+                        <!-- Actin Filaments (thin, green lines) -->
+                        <line x1="150" y1="180" x2="200" y2="220" 
+                              stroke="#27ae60" stroke-width="2" opacity="0.8"/>
+                        <line x1="200" y1="220" x2="300" y2="240" 
+                              stroke="#27ae60" stroke-width="2" opacity="0.8"/>
+                        <line x1="300" y1="240" x2="350" y2="190" 
+                              stroke="#27ae60" stroke-width="2" opacity="0.8"/>
+                        <line x1="180" y1="300" x2="320" y2="310" 
+                              stroke="#27ae60" stroke-width="2" opacity="0.8"/>
+                        <line x1="50" y1="250" x2="150" y2="180" 
+                              stroke="#27ae60" stroke-width="2" opacity="0.8"/>
+                        <line x1="350" y1="190" x2="450" y2="250" 
+                              stroke="#27ae60" stroke-width="2" opacity="0.8"/>
+                        
+                        <!-- Myosin Filaments (thick, red lines) -->
+                        <line x1="160" y1="200" x2="340" y2="200" 
+                              stroke="#c0392b" stroke-width="4" opacity="0.7"/>
+                        <line x1="160" y1="280" x2="340" y2="280" 
+                              stroke="#c0392b" stroke-width="4" opacity="0.7"/>
+                        <line x1="120" y1="240" x2="380" y2="240" 
+                              stroke="#c0392b" stroke-width="4" opacity="0.7"/>
+                        
+                        <!-- Intermediate Filaments (dashed lines) -->
+                        <line x1="150" y1="180" x2="180" y2="300" 
+                              stroke="#95a5a6" stroke-width="1.5" stroke-dasharray="5,5" opacity="0.6"/>
+                        <line x1="350" y1="190" x2="320" y2="310" 
+                              stroke="#95a5a6" stroke-width="1.5" stroke-dasharray="5,5" opacity="0.6"/>
+                        <line x1="200" y1="220" x2="300" y2="240" 
+                              stroke="#95a5a6" stroke-width="1.5" stroke-dasharray="5,5" opacity="0.6"/>
+                        
+                        <!-- Gap Junctions (between cells) -->
+                        <rect x="465" y="235" width="30" height="30" rx="5" 
+                              fill="#f39c12" class="interactive-label gap-junction"/>
+                        <rect x="5" y="235" width="30" height="30" rx="5" 
+                              fill="#f39c12" class="interactive-label gap-junction"/>
+                        
+                        <!-- Labels -->
+                        <text x="150" y="165" text-anchor="middle" font-size="10" fill="#2c3e50">Dense</text>
+                        <text x="150" y="175" text-anchor="middle" font-size="10" fill="#2c3e50">body</text>
+                        
+                        <text x="50" y="230" text-anchor="middle" font-size="10" fill="#e74c3c">Focal</text>
+                        <text x="50" y="240" text-anchor="middle" font-size="10" fill="#e74c3c">adhesion</text>
+                        
+                        <text x="250" y="150" text-anchor="middle" font-size="9" fill="#27ae60">Actin thin filament</text>
+                        
+                        <text x="250" y="320" text-anchor="middle" font-size="9" fill="#c0392b">Myosin thick filament</text>
+                        
+                        <text x="100" y="350" text-anchor="middle" font-size="9" fill="#95a5a6">Intermediate</text>
+                        <text x="100" y="360" text-anchor="middle" font-size="9" fill="#95a5a6">filaments</text>
+                        
+                        <text x="20" y="280" text-anchor="middle" font-size="9" fill="#f39c12">Gap</text>
+                        <text x="20" y="290" text-anchor="middle" font-size="9" fill="#f39c12">junction</text>
+                        
+                        <!-- Annotation arrows -->
+                        <path d="M 350 150 Q 360 130, 380 120" 
+                              stroke="#34495e" stroke-width="1" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="385" y="115" font-size="10" fill="#34495e">
+                            Focal adhesions couple
+                        </text>
+                        <text x="385" y="125" font-size="10" fill="#34495e">
+                            adjacent cells mechanically
+                        </text>
+                        
+                        <path d="M 480 250 Q 490 270, 495 290" 
+                              stroke="#34495e" stroke-width="1" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="425" y="305" font-size="10" fill="#34495e">
+                            Gap junctions couple
+                        </text>
+                        <text x="425" y="315" font-size="10" fill="#34495e">
+                            cells electrically and
+                        </text>
+                        <text x="425" y="325" font-size="10" fill="#34495e">
+                            chemically (some types)
+                        </text>
+                        
+                        <path d="M 250 360 Q 250 380, 250 390" 
+                              stroke="#34495e" stroke-width="1" fill="none" marker-end="url(#arrowhead)"/>
+                        <text x="250" y="405" text-anchor="middle" font-size="10" fill="#34495e">
+                            Intermediate filaments maintain
+                        </text>
+                        <text x="250" y="415" text-anchor="middle" font-size="10" fill="#34495e">
+                            cytoskeletal organization
+                        </text>
+                        
+                        <!-- Arrow marker definition -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="10" 
+                                    refX="9" refY="3" orient="auto">
+                                <polygon points="0 0, 10 3, 0 6" fill="#34495e"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h2>🔗 B. Assembly</h2>
+                
+                <p style="margin-bottom: 12px; font-size: 0.85em; color: #546e7a;">
+                    Contractile units must align with direction of pull for useful force generation:
+                </p>
+                
+                <div class="subsection">
+                    <h3>Dense Bodies</h3>
+                    <ul class="feature-list">
+                        <li>α-actinin-rich structures</li>
+                        <li>Scattered throughout sarcoplasm</li>
+                        <li><strong>= Z disk equivalent</strong></li>
+                        <li>Anchor contractile units</li>
+                    </ul>
+                </div>
+                
+                <div class="subsection">
+                    <h3>Intermediate Filaments</h3>
+                    <ul class="feature-list">
+                        <li><strong>Vimentin & Desmin</strong></li>
+                        <li>Cytoskeletal framework</li>
+                        <li>Align contractile arrays</li>
+                        <li>Type varies by location</li>
+                    </ul>
+                </div>
+                
+                <div class="subsection">
+                    <h3>Focal Adhesions</h3>
+                    <ul class="feature-list">
+                        <li>Dense plaques at membrane</li>
+                        <li><strong>~80 proteins</strong> complex</li>
+                        <li>Actin-binding proteins</li>
+                        <li>Integrins</li>
+                        <li>Link to ECM & cells</li>
+                        <li>Force transmission</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Smooth Muscle</th>
+                    <th>Skeletal Muscle</th>
+                    <th>Functional Significance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Contractile unit</strong></td>
+                    <td>Minisarcomeres (irregular)</td>
+                    <td>Sarcomeres (regular)</td>
+                    <td>No striations, flexible contraction</td>
+                </tr>
+                <tr>
+                    <td><strong>Ca²⁺ regulation</strong></td>
+                    <td>Calmodulin → MLCK → Myosin-P</td>
+                    <td>Ca²⁺ → Troponin → Tropomyosin</td>
+                    <td>Thick filament regulation</td>
+                </tr>
+                <tr>
+                    <td><strong>Anchoring</strong></td>
+                    <td>Dense bodies (scattered)</td>
+                    <td>Z disks (aligned)</td>
+                    <td>Multidirectional force</td>
+                </tr>
+                <tr>
+                    <td><strong>Cell coupling</strong></td>
+                    <td>Gap junctions, focal adhesions</td>
+                    <td>Motor endplate only</td>
+                    <td>Electrical/mechanical coupling</td>
+                </tr>
+                <tr>
+                    <td><strong>Myosin content</strong></td>
+                    <td>Low concentration</td>
+                    <td>High concentration</td>
+                    <td>Slow, sustained contraction</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="key-point">
+            <h3>💡 Key Structure-Function Relationship</h3>
+            <p>
+                The unique arrangement of <strong>minisarcomeres anchored by dense bodies</strong> and connected via 
+                <strong>intermediate filaments</strong> allows smooth muscle to contract in multiple directions and 
+                maintain tension over wide length ranges (50-400% of resting length). This makes it ideal for 
+                hollow organs that undergo significant volume changes.
+            </p>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Interactive elements
+        document.querySelectorAll('.interactive-label').forEach(element => {
+            element.addEventListener('mouseenter', function(e) {
+                const tooltip = document.getElementById('tooltip');
+                let text = '';
+                
+                if (this.id === 'nucleus') {
+                    text = 'Central nucleus - elongated shape in relaxed state';
+                } else if (this.classList.contains('dense-body')) {
+                    text = 'Dense body: α-actinin-rich, anchors actin filaments (= Z disk)';
+                } else if (this.classList.contains('focal-adhesion')) {
+                    text = 'Focal adhesion: Links cytoskeleton to membrane and ECM';
+                } else if (this.classList.contains('gap-junction')) {
+                    text = 'Gap junction: Electrical & chemical coupling between cells';
+                }
+                
+                tooltip.textContent = text;
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top = e.pageY - 30 + 'px';
+                tooltip.classList.add('show');
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                document.getElementById('tooltip').classList.remove('show');
+            });
+        });
+    </script>
+</body>
+</html>
