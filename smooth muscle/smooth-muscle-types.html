@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V. Types of Smooth Muscle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: white;
+            color: #333;
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+            font-size: 14px;
+        }
+        
+        .page-container {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .header h1 {
+            font-size: 1.6em;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .type-panel {
+            border: 1px solid #ddd;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+        
+        .type-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 5px;
+            text-align: center;
+        }
+        
+        .phasic-title {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .tonic-title {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .visualization {
+            height: 180px;
+            background: white;
+            border: 1px solid #ddd;
+            position: relative;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        
+        /* Phasic muscle cells */
+        .phasic-cells {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .phasic-cell {
+            width: 60px;
+            height: 30px;
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            border: 2px solid #0984e3;
+            margin: 2px;
+            border-radius: 15px;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        
+        .gap-junction {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #feca57;
+            border-radius: 50%;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+        
+        .phasic-cell.contracting {
+            animation: contract 2s ease-in-out infinite;
+        }
+        
+        @keyframes contract {
+            0%, 100% { width: 60px; background: linear-gradient(135deg, #74b9ff, #0984e3); }
+            50% { width: 45px; background: linear-gradient(135deg, #54a0ff, #2e86de); }
+        }
+        
+        /* Tonic muscle cells */
+        .tonic-cells {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            padding: 20px;
+        }
+        
+        .tonic-cell {
+            background: linear-gradient(135deg, #ff9ff3, #ee5a6f);
+            border: 2px solid #ee5a6f;
+            border-radius: 10px;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+        
+        .tonic-cell.active {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            transform: scale(0.9);
+        }
+        
+        .nerve-terminal {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #f39c12;
+            border-radius: 50%;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Action potential wave */
+        .ap-wave {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        
+        .wave-path {
+            stroke: #3498db;
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 300;
+            stroke-dashoffset: 300;
+            animation: wave 3s ease-in-out infinite;
+        }
+        
+        @keyframes wave {
+            0% { stroke-dashoffset: 300; }
+            50% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -300; }
+        }
+        
+        /* Characteristics table */
+        .characteristics {
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+        
+        .char-item {
+            display: flex;
+            margin-bottom: 8px;
+            padding: 5px;
+            background: white;
+            border-left: 3px solid #3498db;
+        }
+        
+        .tonic-panel .char-item {
+            border-left-color: #e74c3c;
+        }
+        
+        .char-label {
+            font-weight: bold;
+            min-width: 80px;
+            color: #555;
+        }
+        
+        .char-value {
+            flex: 1;
+            color: #333;
+        }
+        
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            padding: 5px 10px;
+            border: 1px solid #333;
+            background: white;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .btn.active {
+            background: #333;
+            color: white;
+        }
+        
+        /* Bottom comparison section */
+        .comparison-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .comparison-card {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #666;
+        }
+        
+        .comparison-title {
+            font-weight: bold;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .comparison-content {
+            font-size: 0.85em;
+            line-height: 1.4;
+            color: #555;
+        }
+        
+        /* Examples section */
+        .examples-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .example-item {
+            font-size: 0.85em;
+            padding: 5px;
+            background: white;
+            border-radius: 3px;
+        }
+        
+        .example-label {
+            font-weight: bold;
+            color: #666;
+        }
+        
+        /* Pacemaker indicator */
+        .pacemaker {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 0.75em;
+        }
+        
+        .icc-cell {
+            width: 20px;
+            height: 20px;
+            background: #9b59b6;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+        
+        /* Status indicator */
+        .status-bar {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.75em;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                font-size: 12px;
+            }
+            
+            .page-container {
+                box-shadow: none;
+                border: none;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>V. TYPES OF SMOOTH MUSCLE</h1>
+        </div>
+
+        <div class="main-grid">
+            <!-- Phasic Smooth Muscle -->
+            <div class="type-panel">
+                <div class="type-title phasic-title">A. PHASIC SMOOTH MUSCLE</div>
+                
+                <div class="controls">
+                    <button class="btn active" onclick="setPhasicState('rest')">Rest</button>
+                    <button class="btn" onclick="setPhasicState('active')">Active</button>
+                    <button class="btn" onclick="setPhasicState('wave')">Wave</button>
+                </div>
+                
+                <div class="visualization">
+                    <div class="status-bar" id="phasicStatus">Single Unit</div>
+                    <div class="phasic-cells" id="phasicCells">
+                        <div class="phasic-cell">
+                            <div class="gap-junction"></div>
+                        </div>
+                        <div class="phasic-cell">
+                            <div class="gap-junction"></div>
+                        </div>
+                        <div class="phasic-cell">
+                            <div class="gap-junction"></div>
+                        </div>
+                        <div class="phasic-cell">
+                            <div class="gap-junction"></div>
+                        </div>
+                    </div>
+                    
+                    <svg class="ap-wave" id="apWave" style="display: none;">
+                        <path class="wave-path" d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30" />
+                    </svg>
+                    
+                    <div class="pacemaker" id="pacemaker" style="display: none;">
+                        <div class="icc-cell"></div>
+                        <span>ICC Pacemaker (3-20 cycles/min)</span>
+                    </div>
+                </div>
+                
+                <div class="characteristics">
+                    <div class="char-item">
+                        <span class="char-label">Connection:</span>
+                        <span class="char-value">Gap junctions (electrical coupling)</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="char-label">Function:</span>
+                        <span class="char-value">Single unit, coordinated</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="char-label">Contraction:</span>
+                        <span class="char-value">Transient, rhythmic</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="char-label">Speed:</span>
+                        <span class="char-value">Fast (10-20x slower than skeletal)</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="char-label">AP:</span>
+                        <span class="char-value">L-type Ca²⁺ mediated, BK modulated</span>
+                    </div>
+                </div>
+                
+                <div class="examples-grid">
+                    <div class="example-item">
+                        <span class="example-label">GI tract:</span> walls
+                    </div>
+                    <div class="example-item">
+                        <span class="example-label">Urogenital:</span> ureters, bladder
+                    </div>
+                    <div class="example-item">
+                        <span class="example-label">Reproductive:</span> uterus, vas deferens
+                    </div>
+                    <div class="example-item">
+                        <span class="example-label">Vessels:</span> small arteries
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tonic Smooth Muscle -->
+            <div class="type-panel">
+                <div class="type-title tonic-title">B. TONIC SMOOTH MUSCLE</div>
+                
+                <div class="controls">
+                    <button class="btn active" onclick="setTonicState('rest')">Rest</button>
+                    <button class="btn" onclick="setTonicState('partial')">Partial</button>
+                    <button class="btn" onclick="setTonicState('full')">Full</button>
+                </div>
+                
+                <div class="visualization">
+                    <div class="status-bar" id="tonicStatus">Multi-Unit</div>
+                    <div class="tonic-cells" id="tonicCells">
+                        <div class="tonic-cell" id="tc1">
+                            <div class="nerve-terminal">N</div>
+                        </div>
+                        <div class="tonic-cell" id="tc2">
+                            <div class="nerve-terminal">N</div>
+                        </div>
+                        <div class="tonic-cell" id="tc3">
+                            <div class="nerve-terminal">N</div>
+                        </div>
+                        <div class="tonic-cell" id="tc4">
+                            <div class="nerve-terminal">N</div>
+                        </div>
+                        <div class="tonic-cell" id="tc5">
+                            <div class="nerve-terminal">N</div>
+                        </div>
+                        <div class="tonic-cell" id="tc6">
+                            <div class="nerve-terminal">N</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="characteristics">
+                    <div class="char-item">
+                        <span class="char-label">Connection:</span>
+                        <span class="char-value">Isolated cells, no gap junctions</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="char-label">Function:</span>
+                        <span class="char-value">Multi-unit, independent control</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="char-label">Contraction:</span>
+                        <span class="char-value">Sustained, graded</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="char-label">Speed:</span>
+                        <span class="char-value">Slow (optimized for sustained force)</span>
+                    </div>
+                    <div class="char-item">
+                        <span class="char-label">AP:</span>
+                        <span class="char-value">Usually no AP, graded response</span>
+                    </div>
+                </div>
+                
+                <div class="examples-grid">
+                    <div class="example-item">
+                        <span class="example-label">Eye:</span> iris, ciliary muscle
+                    </div>
+                    <div class="example-item">
+                        <span class="example-label">Vessels:</span> large arteries, veins
+                    </div>
+                    <div class="example-item">
+                        <span class="example-label">Sphincters:</span> LES, pyloric
+                    </div>
+                    <div class="example-item">
+                        <span class="example-label">Airways:</span> bronchioles
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-section">
+            <div class="comparison-card">
+                <div class="comparison-title">Electrical Properties</div>
+                <div class="comparison-content">
+                    <strong>Phasic:</strong> Vm oscillations, slow waves from ICC pacemakers, propagated APs<br>
+                    <strong>Tonic:</strong> Stable Vm, graded depolarization, receptor-operated responses
+                </div>
+            </div>
+            
+            <div class="comparison-card">
+                <div class="comparison-title">Gene Expression</div>
+                <div class="comparison-content">
+                    <strong>Phasic:</strong> Fast MLC/MHC isoforms, ↑MLCK, ↑MYPT1<br>
+                    <strong>Tonic:</strong> Slow MLC/MHC isoforms, optimized for efficiency
+                </div>
+            </div>
+            
+            <div class="comparison-card">
+                <div class="comparison-title">Functional Roles</div>
+                <div class="comparison-content">
+                    <strong>Phasic:</strong> Peristalsis, mixing, propulsion, rhythmic contractions<br>
+                    <strong>Tonic:</strong> Maintain tone, fine control, prolonged contractions
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let phasicState = 'rest';
+        let tonicState = 'rest';
+        
+        function setPhasicState(state) {
+            phasicState = state;
+            
+            // Update buttons
+            document.querySelectorAll('.controls .btn').forEach(btn => {
+                if (btn.parentElement.parentElement.querySelector('.phasic-title')) {
+                    btn.classList.remove('active');
+                }
+            });
+            event.target.classList.add('active');
+            
+            const cells = document.querySelectorAll('.phasic-cell');
+            const apWave = document.getElementById('apWave');
+            const pacemaker = document.getElementById('pacemaker');
+            const status = document.getElementById('phasicStatus');
+            
+            // Reset all
+            cells.forEach(cell => cell.classList.remove('contracting'));
+            apWave.style.display = 'none';
+            pacemaker.style.display = 'none';
+            
+            switch(state) {
+                case 'rest':
+                    status.textContent = 'Single Unit - Resting';
+                    break;
+                    
+                case 'active':
+                    status.textContent = 'Single Unit - Contracting';
+                    cells.forEach((cell, i) => {
+                        setTimeout(() => {
+                            cell.classList.add('contracting');
+                        }, i * 100);
+                    });
+                    break;
+                    
+                case 'wave':
+                    status.textContent = 'Slow Wave Propagation';
+                    apWave.style.display = 'block';
+                    pacemaker.style.display = 'flex';
+                    cells.forEach((cell, i) => {
+                        setTimeout(() => {
+                            cell.classList.add('contracting');
+                        }, i * 200);
+                    });
+                    break;
+            }
+        }
+        
+        function setTonicState(state) {
+            tonicState = state;
+            
+            // Update buttons
+            document.querySelectorAll('.controls .btn').forEach(btn => {
+                if (btn.parentElement.parentElement.querySelector('.tonic-title')) {
+                    btn.classList.remove('active');
+                }
+            });
+            event.target.classList.add('active');
+            
+            const cells = document.querySelectorAll('.tonic-cell');
+            const status = document.getElementById('tonicStatus');
+            
+            // Reset all
+            cells.forEach(cell => cell.classList.remove('active'));
+            
+            switch(state) {
+                case 'rest':
+                    status.textContent = 'Multi-Unit - Resting';
+                    break;
+                    
+                case 'partial':
+                    status.textContent = 'Multi-Unit - Partial Recruitment';
+                    document.getElementById('tc1').classList.add('active');
+                    document.getElementById('tc3').classList.add('active');
+                    document.getElementById('tc5').classList.add('active');
+                    break;
+                    
+                case 'full':
+                    status.textContent = 'Multi-Unit - Full Recruitment';
+                    cells.forEach(cell => cell.classList.add('active'));
+                    break;
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Smooth Muscle Types Simulation Ready');
+        });
+    </script>
+</body>
+</html>
