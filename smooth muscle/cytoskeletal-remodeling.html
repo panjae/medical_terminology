@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IV. Cytoskeletal Remodeling - Length Adaptation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: white;
+            color: #333;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .page-container {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .header p {
+            font-size: 1em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .left-panel {
+            border-right: 1px solid #ddd;
+            padding-right: 20px;
+        }
+        
+        .right-panel {
+            padding-left: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 15px;
+            background: #f0f0f0;
+            padding: 5px 10px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .subsection {
+            margin-bottom: 20px;
+        }
+        
+        .subsection h3 {
+            font-size: 1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: 1px solid #333;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        /* Bladder simulation */
+        .bladder-container {
+            position: relative;
+            height: 250px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+        
+        .bladder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 100px;
+            background: linear-gradient(135deg, #ffcccb, #ff9999);
+            border-radius: 50%;
+            transition: all 1s ease;
+            border: 2px solid #cc0000;
+        }
+        
+        .bladder.full {
+            width: 250px;
+            height: 180px;
+            background: linear-gradient(135deg, #ffeeee, #ffcccc);
+        }
+        
+        .volume-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+            background: white;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .muscle-fibers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .fiber {
+            position: absolute;
+            height: 2px;
+            background: #cc0000;
+            opacity: 0.5;
+            transition: all 1s ease;
+        }
+        
+        /* Actin dynamics visualization */
+        .actin-container {
+            position: relative;
+            height: 200px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .actin-filament {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            transition: all 1s ease;
+        }
+        
+        .g-actin {
+            width: 20px;
+            height: 20px;
+            background: #28a745;
+            border-radius: 50%;
+            margin: 2px;
+            opacity: 0.6;
+            transition: all 0.5s ease;
+        }
+        
+        .f-actin {
+            display: flex;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            height: 15px;
+            border-radius: 8px;
+            padding: 0 5px;
+            align-items: center;
+            transition: all 1s ease;
+        }
+        
+        .f-actin .monomer {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 1px;
+            opacity: 0.8;
+        }
+        
+        /* Information boxes */
+        .info-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        .info-box strong {
+            color: #007bff;
+        }
+        
+        .highlight-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        /* Diagram elements */
+        .diagram {
+            width: 100%;
+            height: 150px;
+            background: white;
+            border: 1px solid #ddd;
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .myosin-thick {
+            position: absolute;
+            width: 200px;
+            height: 8px;
+            background: linear-gradient(90deg, #dc3545, #cc0000);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 1s ease;
+        }
+        
+        .myosin-thick.stretched {
+            width: 280px;
+            height: 6px;
+        }
+        
+        .myosin-thick.contracted {
+            width: 150px;
+            height: 10px;
+        }
+        
+        /* Force indicator */
+        .force-meter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .force-bar {
+            flex: 1;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .force-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+            width: 50%;
+            transition: width 1s ease;
+            border-radius: 10px;
+        }
+        
+        .status-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+            margin-top: 20px;
+            font-size: 0.85em;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                max-width: 100%;
+            }
+            
+            .page-container {
+                box-shadow: none;
+                border: none;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>IV. CYTOSKELETAL REMODELING</h1>
+            <p>Length Adaptation and Actin-Myosin Dynamics in Smooth Muscle</p>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="section-title">A. Length Adaptation</div>
+                
+                <div class="subsection">
+                    <h3>Bladder Example (10-500 mL volume change)</h3>
+                    <div class="controls">
+                        <button class="btn active" onclick="setBladderState('empty')">Empty (10 mL)</button>
+                        <button class="btn" onclick="setBladderState('partial')">Partial (250 mL)</button>
+                        <button class="btn" onclick="setBladderState('full')">Full (500 mL)</button>
+                    </div>
+                    
+                    <div class="bladder-container">
+                        <div class="volume-indicator" id="volumeIndicator">10 mL</div>
+                        <div class="bladder" id="bladder">
+                            <div class="muscle-fibers">
+                                <div class="fiber" style="top: 30%; left: 10%; width: 80%; transform: rotate(-5deg);"></div>
+                                <div class="fiber" style="top: 50%; left: 10%; width: 80%; transform: rotate(0deg);"></div>
+                                <div class="fiber" style="top: 70%; left: 10%; width: 80%; transform: rotate(5deg);"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <strong>Key Feature:</strong> Smooth muscle retains full contractility even when stretched to accommodate volume changes. Unlike skeletal muscle, it can adapt its optimal length-tension relationship.
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>Myosin Filament Adaptation</h3>
+                    <div class="diagram">
+                        <div class="myosin-thick" id="myosinFilament"></div>
+                    </div>
+                    <div class="status-text" id="myosinStatus">
+                        Baseline: Normal myosin filament length and density
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="section-title">B. Actin-Myosin Dynamics</div>
+                
+                <div class="subsection">
+                    <h3>G-actin ⟷ F-actin Equilibrium</h3>
+                    <div class="controls">
+                        <button class="btn" onclick="setActinState('relaxed')">Relaxation</button>
+                        <button class="btn active" onclick="setActinState('baseline')">Baseline</button>
+                        <button class="btn" onclick="setActinState('contracted')">Contraction</button>
+                    </div>
+                    
+                    <div class="actin-container">
+                        <div class="actin-filament" id="actinFilament">
+                            <div class="g-actin" style="left: -100px;"></div>
+                            <div class="g-actin" style="left: -70px;"></div>
+                            <div class="g-actin" style="left: -40px;"></div>
+                            
+                            <div class="f-actin" id="fActin">
+                                <div class="monomer"></div>
+                                <div class="monomer"></div>
+                                <div class="monomer"></div>
+                                <div class="monomer"></div>
+                                <div class="monomer"></div>
+                                <div class="monomer"></div>
+                            </div>
+                            
+                            <div class="g-actin" style="right: -40px;"></div>
+                            <div class="g-actin" style="right: -70px;"></div>
+                            <div class="g-actin" style="right: -100px;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <strong>During contraction:</strong> G-actin monomers add to barbed ends<br>
+                        <strong>During relaxation:</strong> Monomers removed from pointed ends
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>Force Production Capacity</h3>
+                    <div class="force-meter">
+                        <span style="font-size: 0.9em;">Force:</span>
+                        <div class="force-bar">
+                            <div class="force-fill" id="forceBar"></div>
+                        </div>
+                        <span id="forceValue" style="font-size: 0.9em;">100%</span>
+                    </div>
+                    
+                    <div class="info-box">
+                        <strong>Alternate isoforms:</strong> Cytoskeletal actin/myosin provide structural support and contribute minor force through ECM interactions, enhancing rigidity during contraction.
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <h3>Clinical Relevance</h3>
+                    <div class="status-text">
+                        This adaptation mechanism allows hollow organs to function across wide volume ranges - critical for bladder, stomach, uterus, and blood vessels. Dysfunction leads to conditions like overactive bladder or vascular stiffness.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #28a745;"></div>
+                <span>G-actin/F-actin</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #dc3545;"></div>
+                <span>Myosin filaments</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffcccb;"></div>
+                <span>Smooth muscle tissue</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffc107;"></div>
+                <span>Adaptation state</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentBladderState = 'empty';
+        let currentActinState = 'baseline';
+        
+        function setBladderState(state) {
+            currentBladderState = state;
+            
+            // Update button states
+            document.querySelectorAll('.controls .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const bladder = document.getElementById('bladder');
+            const volumeIndicator = document.getElementById('volumeIndicator');
+            const myosinFilament = document.getElementById('myosinFilament');
+            const myosinStatus = document.getElementById('myosinStatus');
+            const forceBar = document.getElementById('forceBar');
+            const forceValue = document.getElementById('forceValue');
+            
+            switch(state) {
+                case 'empty':
+                    bladder.classList.remove('full');
+                    bladder.style.width = '150px';
+                    bladder.style.height = '100px';
+                    volumeIndicator.textContent = '10 mL';
+                    myosinFilament.classList.remove('stretched', 'contracted');
+                    myosinFilament.classList.add('contracted');
+                    myosinStatus.textContent = 'Empty state: Myosin filaments at rest length, ready for contraction';
+                    forceBar.style.width = '100%';
+                    forceValue.textContent = '100%';
+                    break;
+                    
+                case 'partial':
+                    bladder.classList.remove('full');
+                    bladder.style.width = '200px';
+                    bladder.style.height = '140px';
+                    volumeIndicator.textContent = '250 mL';
+                    myosinFilament.classList.remove('stretched', 'contracted');
+                    myosinStatus.textContent = 'Partial fill: Length adaptation occurring, contractility maintained';
+                    forceBar.style.width = '95%';
+                    forceValue.textContent = '95%';
+                    break;
+                    
+                case 'full':
+                    bladder.classList.add('full');
+                    volumeIndicator.textContent = '500 mL';
+                    myosinFilament.classList.remove('stretched', 'contracted');
+                    myosinFilament.classList.add('stretched');
+                    myosinStatus.textContent = 'Full state: Complete length adaptation - new actin/myosin added, full contractility preserved';
+                    forceBar.style.width = '100%';
+                    forceValue.textContent = '100%';
+                    break;
+            }
+            
+            // Update muscle fibers
+            updateMuscleFibers(state);
+        }
+        
+        function setActinState(state, buttonElement) {
+            currentActinState = state;
+            
+            // Update button states
+            buttonElement.parentElement.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            buttonElement.classList.add('active');
+            
+            const fActin = document.getElementById('fActin');
+            const actinFilament = document.getElementById('actinFilament');
+            const gActins = actinFilament.querySelectorAll('.g-actin');
+            
+            switch(state) {
+                case 'relaxed':
+                    // Shorter F-actin, more G-actin visible
+                    fActin.style.width = '80px';
+                    gActins.forEach(g => {
+                        g.style.opacity = '1';
+                        g.style.transform = 'scale(1.2)';
+                    });
+                    break;
+                    
+                case 'baseline':
+                    // Normal state
+                    fActin.style.width = '120px';
+                    gActins.forEach(g => {
+                        g.style.opacity = '0.6';
+                        g.style.transform = 'scale(1)';
+                    });
+                    break;
+                    
+                case 'contracted':
+                    // Longer F-actin, less G-actin
+                    fActin.style.width = '160px';
+                    gActins.forEach(g => {
+                        g.style.opacity = '0.3';
+                        g.style.transform = 'scale(0.8)';
+                    });
+                    break;
+            }
+        }
+        
+        function updateMuscleFibers(state) {
+            const fibers = document.querySelectorAll('.fiber');
+            
+            switch(state) {
+                case 'empty':
+                    fibers.forEach((fiber, i) => {
+                        fiber.style.width = '80%';
+                        fiber.style.opacity = '0.7';
+                    });
+                    break;
+                    
+                case 'partial':
+                    fibers.forEach((fiber, i) => {
+                        fiber.style.width = '85%';
+                        fiber.style.opacity = '0.6';
+                    });
+                    break;
+                    
+                case 'full':
+                    fibers.forEach((fiber, i) => {
+                        fiber.style.width = '90%';
+                        fiber.style.opacity = '0.4';
+                    });
+                    break;
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial bladder state
+            const bladder = document.getElementById('bladder');
+            const volumeIndicator = document.getElementById('volumeIndicator');
+            const myosinFilament = document.getElementById('myosinFilament');
+            const myosinStatus = document.getElementById('myosinStatus');
+            const forceBar = document.getElementById('forceBar');
+            const forceValue = document.getElementById('forceValue');
+            
+            bladder.style.width = '150px';
+            bladder.style.height = '100px';
+            volumeIndicator.textContent = '10 mL';
+            myosinFilament.classList.add('contracted');
+            myosinStatus.textContent = 'Empty state: Myosin filaments at rest length, ready for contraction';
+            forceBar.style.width = '100%';
+            forceValue.textContent = '100%';
+            updateMuscleFibers('empty');
+            
+            // Set initial actin state
+            const fActin = document.getElementById('fActin');
+            const actinFilament = document.getElementById('actinFilament');
+            const gActins = actinFilament.querySelectorAll('.g-actin');
+            
+            fActin.style.width = '120px';
+            gActins.forEach(g => {
+                g.style.opacity = '0.6';
+                g.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
